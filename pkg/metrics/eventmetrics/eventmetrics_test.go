@@ -98,3 +98,71 @@ tetragon_flags_total{type="execve"} 1
 `)
 	assert.NoError(t, testutil.CollectAndCompare(FlagCount, expected))
 }
+
+func TestHandleProcessedKprobeEvent(t *testing.T) {
+	assert.NoError(t, testutil.CollectAndCompare(KprobeEventsProcessed, strings.NewReader("")))
+	handleProcessedKprobeEvent(nil)
+	// empty process
+	handleProcessedKprobeEvent(&tetragon.GetEventsResponse{Event: &tetragon.GetEventsResponse_ProcessKprobe{ProcessKprobe: &tetragon.ProcessKprobe{}}})
+	handleProcessedKprobeEvent(&tetragon.GetEventsResponse{Event: &tetragon.GetEventsResponse_ProcessExec{ProcessExec: &tetragon.ProcessExec{}}})
+	handleProcessedKprobeEvent(&tetragon.GetEventsResponse{Event: &tetragon.GetEventsResponse_ProcessTracepoint{ProcessTracepoint: &tetragon.ProcessTracepoint{}}})
+	handleProcessedKprobeEvent(&tetragon.GetEventsResponse{Event: &tetragon.GetEventsResponse_ProcessExit{ProcessExit: &tetragon.ProcessExit{}}})
+
+	// empty pod
+	handleProcessedKprobeEvent(&tetragon.GetEventsResponse{Event: &tetragon.GetEventsResponse_ProcessKprobe{ProcessKprobe: &tetragon.ProcessKprobe{
+		Process: &tetragon.Process{Binary: "binary_a"},
+	}}})
+	handleProcessedKprobeEvent(&tetragon.GetEventsResponse{Event: &tetragon.GetEventsResponse_ProcessExec{ProcessExec: &tetragon.ProcessExec{
+		Process: &tetragon.Process{Binary: "binary_b"},
+	}}})
+	handleProcessedKprobeEvent(&tetragon.GetEventsResponse{Event: &tetragon.GetEventsResponse_ProcessTracepoint{ProcessTracepoint: &tetragon.ProcessTracepoint{
+		Process: &tetragon.Process{Binary: "binary_c"},
+	}}})
+	handleProcessedKprobeEvent(&tetragon.GetEventsResponse{Event: &tetragon.GetEventsResponse_ProcessExit{ProcessExit: &tetragon.ProcessExit{
+		Process: &tetragon.Process{Binary: "binary_e"},
+	}}})
+
+	// with pod
+	handleProcessedKprobeEvent(&tetragon.GetEventsResponse{Event: &tetragon.GetEventsResponse_ProcessKprobe{ProcessKprobe: &tetragon.ProcessKprobe{
+		Process: &tetragon.Process{
+			Binary: "binary_a",
+			Pod:    &tetragon.Pod{Namespace: "namespace_a", Name: "pod_a"},
+		},
+	}}})
+	handleProcessedKprobeEvent(&tetragon.GetEventsResponse{Event: &tetragon.GetEventsResponse_ProcessExec{ProcessExec: &tetragon.ProcessExec{
+		Process: &tetragon.Process{
+			Binary: "binary_b",
+			Pod:    &tetragon.Pod{Namespace: "namespace_b", Name: "pod_b"},
+		},
+	}}})
+	handleProcessedKprobeEvent(&tetragon.GetEventsResponse{Event: &tetragon.GetEventsResponse_ProcessTracepoint{ProcessTracepoint: &tetragon.ProcessTracepoint{
+		Process: &tetragon.Process{
+			Binary: "binary_c",
+			Pod:    &tetragon.Pod{Namespace: "namespace_c", Name: "pod_c"},
+		},
+	}}})
+	handleProcessedKprobeEvent(&tetragon.GetEventsResponse{Event: &tetragon.GetEventsResponse_ProcessExit{ProcessExit: &tetragon.ProcessExit{
+		Process: &tetragon.Process{
+			Binary: "binary_e",
+			Pod:    &tetragon.Pod{Namespace: "namespace_e", Name: "pod_e"},
+		},
+	}}})
+
+	// with function
+	handleProcessedKprobeEvent(&tetragon.GetEventsResponse{Event: &tetragon.GetEventsResponse_ProcessKprobe{ProcessKprobe: &tetragon.ProcessKprobe{
+		Process: &tetragon.Process{
+			Binary: "binary_a",
+			Pod:    &tetragon.Pod{Namespace: "namespace_a", Name: "pod_a"},
+		},
+		FunctionName: "func_a",
+	}}})
+
+	expected := strings.NewReader(`# HELP tetragon_events_kprobe_total The total number of Tetragon event type process_kprobe.
+# TYPE tetragon_events_kprobe_total counter
+tetragon_events_kprobe_total{binary="",function="",namespace="",pod=""} 1
+tetragon_events_kprobe_total{binary="binary_a",function="",namespace="",pod=""} 1
+tetragon_events_kprobe_total{binary="binary_a",function="",namespace="namespace_a",pod="pod_a"} 1
+tetragon_events_kprobe_total{binary="binary_a",function="func_a",namespace="namespace_a",pod="pod_a"} 1
+`)
+	assert.NoError(t, testutil.CollectAndCompare(KprobeEventsProcessed, expected))
+}

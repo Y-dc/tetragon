@@ -7,6 +7,7 @@ package helpers
 
 import (
 	fmt "fmt"
+
 	tetragon "github.com/cilium/tetragon/api/v1/tetragon"
 )
 
@@ -95,4 +96,36 @@ func ResponseInnerGetParent(event tetragon.IsGetEventsResponse_Event) *tetragon.
 
 	}
 	return nil
+}
+
+// ResponseGetFunctionInfo returns a GetEventsResponse's (event type of process_kprobe) function info if it exists
+func ResponseGetFunctionInfo(response *tetragon.GetEventsResponse) (functionName string, args interface{}) {
+	if response == nil {
+		return "", nil
+	}
+
+	event := response.Event
+	if event == nil {
+		return "", nil
+	}
+
+	return ResponseInnerGetFunctionInfo(event)
+}
+
+// ResponseInnerGetFunctionInfo returns a GetEventsResponse's (event type of process_kprobe) function name and args if it exists
+func ResponseInnerGetFunctionInfo(event tetragon.IsGetEventsResponse_Event) (functionName string, args interface{}) {
+	if event == nil {
+		return "", nil
+	}
+
+	ev, ok := event.(*tetragon.GetEventsResponse_ProcessKprobe)
+	if !ok {
+		return "", nil
+	}
+
+	if ev.ProcessKprobe == nil {
+		return "", nil
+	}
+
+	return ev.ProcessKprobe.FunctionName, ev.ProcessKprobe.Args
 }

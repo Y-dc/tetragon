@@ -33,6 +33,11 @@ var (
 		Help:        "The total number of events dropped because listener buffer was full",
 		ConstLabels: nil,
 	}, nil)
+	KprobeEventsProcessed = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name:        consts.MetricNamePrefix + "events_kprobe_total",
+		Help:        "The total number of Tetragon event type process_kprobe.",
+		ConstLabels: nil,
+	}, []string{"namespace", "pod", "binary", "function"})
 )
 
 func GetProcessInfo(process *tetragon.Process) (binary, pod, namespace string) {
@@ -76,7 +81,31 @@ func handleProcessedEvent(processedEvent interface{}) {
 	EventsProcessed.WithLabelValues(eventType, namespace, pod, binary).Inc()
 }
 
+// handleProcessedKprobeEvent handles process_kprobe events metrics(KprobeEventsProcessed)
+func handleProcessedKprobeEvent(processedEvent interface{}) {
+	var eventType, namespace, pod, binary, funcName string
+	switch ev := processedEvent.(type) {
+	case *tetragon.GetEventsResponse:
+		binary, pod, namespace = GetProcessInfo(filters.GetProcess(&v1.Event{Event: ev}))
+		var err error
+		eventType, err = helpers.ResponseTypeString(ev)
+		if err != nil {
+			logger.GetLogger().WithField("event", processedEvent).WithError(err).Warn("metrics: handleProcessedEvent: unhandled event")
+			eventType = "unhandled"
+		}
+		if eventType != tetragon.EventType_PROCESS_KPROBE.String() {
+			return
+		}
+		funcName, _ = helpers.ResponseGetFunctionInfo(ev)
+	default:
+		return
+	}
+
+	KprobeEventsProcessed.WithLabelValues(namespace, pod, binary, funcName).Inc()
+}
+
 func ProcessEvent(originalEvent interface{}, processedEvent interface{}) {
 	handleOriginalEvent(originalEvent)
 	handleProcessedEvent(processedEvent)
+	handleProcessedKprobeEvent(processedEvent)
 }

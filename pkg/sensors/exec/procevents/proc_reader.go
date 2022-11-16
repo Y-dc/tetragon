@@ -413,11 +413,13 @@ func GetRunningProcs() []Procs {
 
 		p := Procs{
 			ppid: uint32(_ppid), pnspid: pnspid, pargs: pcmdsUTF,
-			pflags: api.EventProcFS | api.EventNeedsCWD | api.EventNeedsAUID,
-			pktime: pktime,
-			uid:    euid, // use euid to be compatible with ps
-			auid:   auid,
-			pid:    uint32(pid), nspid: nspid, args: cmdsUTF,
+			pflags:               api.EventProcFS | api.EventNeedsCWD | api.EventNeedsAUID,
+			pktime:               pktime,
+			uid:                  euid, // use euid to be compatible with ps
+			auid:                 auid,
+			pid:                  uint32(pid),
+			nspid:                nspid,
+			args:                 cmdsUTF,
 			flags:                api.EventProcFS | api.EventNeedsCWD | api.EventNeedsAUID,
 			ktime:                ktime,
 			permitted:            permitted,

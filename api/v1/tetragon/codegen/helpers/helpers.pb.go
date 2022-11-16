@@ -129,3 +129,33 @@ func ResponseInnerGetFunctionInfo(event tetragon.IsGetEventsResponse_Event) (fun
 
 	return ev.ProcessKprobe.FunctionName, ev.ProcessKprobe.Args
 }
+
+func ResponseGetTracePointInfo(response *tetragon.GetEventsResponse) (
+	subsys, eventName string, args  []*tetragon.KprobeArgument) {
+	if response == nil {
+		return "","", nil
+	}
+
+	event := response.Event
+	if event == nil {
+		return "","", nil
+	}
+
+	return ResponseInnerGetTracePointInfo(event)
+}
+
+func ResponseInnerGetTracePointInfo(event tetragon.IsGetEventsResponse_Event) (
+	subsys, eventName string, args  []*tetragon.KprobeArgument) {
+	if event == nil {
+		return "","", nil
+	}
+
+	ev, ok := event.(*tetragon.GetEventsResponse_ProcessTracepoint)
+	if !ok {
+		return "","", nil
+	}
+	if ev.ProcessTracepoint == nil {
+		return "","", nil
+	}
+	return ev.ProcessTracepoint.Subsys, ev.ProcessTracepoint.Event, ev.ProcessTracepoint.Args
+}

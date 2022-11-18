@@ -6,9 +6,8 @@ package eventmetrics
 import (
 	"bufio"
 	"bytes"
-	"fmt"
-	"io/ioutil"
 	"net/http"
+	"strconv"
 
 	v1 "github.com/cilium/hubble/pkg/api/v1"
 	"github.com/cilium/tetragon/api/v1/tetragon"
@@ -19,7 +18,6 @@ import (
 	"github.com/cilium/tetragon/pkg/metrics/consts"
 	"github.com/cilium/tetragon/pkg/metrics/errormetrics"
 	"github.com/cilium/tetragon/pkg/reader/exec"
-	"github.com/fatih/color"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -78,15 +76,15 @@ func parseResponseMessage(value []byte, namespace, pod, binary string) {
 		return
 	}
 
-	body := resp.Body
-	b, _ := ioutil.ReadAll(body)
-	body.Close()
-	fmt.Printf("\nStatusCode: %s, Len: %s, ContentType: %s, Body: %s\n",
-		color.GreenString("%d", resp.StatusCode),
-		color.GreenString("%d", resp.ContentLength),
-		color.GreenString("%s", resp.Header["Content-Type"]),
-		color.GreenString("%s", string(b)))
-	TracePointHttpResponse.WithLabelValues(namespace, pod, binary, resp.Status).Inc()
+	//body := resp.Body
+	//b, _ := ioutil.ReadAll(body)
+	//body.Close()
+	//fmt.Printf("\nStatusCode: %s, Len: %s, ContentType: %s, Body: %s\n",
+	//	color.GreenString("%d", resp.StatusCode),
+	//	color.GreenString("%d", resp.ContentLength),
+	//	color.GreenString("%s", resp.Header["Content-Type"]),
+	//	color.GreenString("%s", string(b)))
+	TracePointHttpResponse.WithLabelValues(namespace, pod, binary, strconv.Itoa(resp.StatusCode)).Inc()
 }
 
 func parseRequestMessage(value []byte, namespace, pod, binary string) {
@@ -97,11 +95,11 @@ func parseRequestMessage(value []byte, namespace, pod, binary string) {
 		return
 	}
 
-	fmt.Printf("\nProtocol: %s, Method: %s, URI: %s, Host: %s\n",
-		color.GreenString("%s", req.Proto),
-		color.GreenString("%s", req.Method),
-		color.GreenString("%s", req.RequestURI),
-		color.GreenString("%s", req.Host))
+	//fmt.Printf("\nProtocol: %s, Method: %s, URI: %s, Host: %s\n",
+	//	color.GreenString("%s", req.Proto),
+	//	color.GreenString("%s", req.Method),
+	//	color.GreenString("%s", req.RequestURI),
+	//	color.GreenString("%s", req.Host))
 	TracePointHttpRequest.WithLabelValues(
 		namespace, pod, binary, req.Proto, req.Host, req.Method, req.RequestURI).Inc()
 }

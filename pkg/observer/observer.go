@@ -160,7 +160,7 @@ func (k *Observer) getRBSize(cpus int) int {
 	var size int
 
 	if option.Config.RBSize == 0 && option.Config.RBSizeTotal == 0 {
-		size = perCPUBufferBytes * 10
+		size = perCPUBufferBytes * 100
 	} else if option.Config.RBSize != 0 {
 		size = option.Config.RBSize
 	} else {

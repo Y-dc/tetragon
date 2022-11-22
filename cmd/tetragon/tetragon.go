@@ -24,7 +24,7 @@ func goPprof() {
 	router := gin.New()
 	pprof.Register(router)
 	httpServer := &http.Server{
-		Addr:         ":80",
+		Addr:         ":9999",
 		Handler:      router,
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 2 * time.Minute,

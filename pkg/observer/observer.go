@@ -118,6 +118,7 @@ func HandlePerfData(data []byte) (byte, []Event, error) {
 }
 
 func (k *Observer) receiveEvent(data []byte, cpu int) {
+	fmt.Println(string(data))
 	k.recvCntr++
 	op, events, err := HandlePerfData(data)
 	opcodemetrics.OpTotalInc(int(op))

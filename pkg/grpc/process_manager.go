@@ -64,7 +64,7 @@ func (pm *ProcessManager) Notify(event notify.Message) error {
 	processedEvent := event.HandleMessage()
 	if processedEvent != nil {
 		js, _ := json.Marshal(processedEvent)
-		if !strings.Contains(string(js),"/data/code/main"){
+		if strings.Contains(string(js),"/data/code/main"){
 			fmt.Printf("print events: %s\n",js)
 		}
 		pm.NotifyListener(event, processedEvent)

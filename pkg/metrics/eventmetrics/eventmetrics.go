@@ -125,6 +125,9 @@ func handleProcessedEvent(processedEvent interface{}) {
 	switch ev := processedEvent.(type) {
 	case *tetragon.GetEventsResponse:
 		binary, pod, namespace = GetProcessInfo(filters.GetProcess(&v1.Event{Event: ev}))
+		if binary == "/usr/bin/tetragon" || namespace == "" || binary == "/usr/bin/tetra"{
+			return
+		}
 		var err error
 		eventType, err = helpers.ResponseTypeString(ev)
 		if err != nil {

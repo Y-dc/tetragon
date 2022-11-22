@@ -153,15 +153,17 @@ func handleTracePointToHTTP(ev *tetragon.GetEventsResponse, eventType, namespace
 	if len(args)<2 {
 		return
 	}
-	data := args[0].GetBytesArg()
-	if len(data) == 0 {
-		return
-	}
-	switch event {
-	case "sys_enter_write":
-		parseResponseMessage(data, namespace, pod, binary)
-	case "sys_enter_read":
-		parseRequestMessage(data, namespace, pod, binary)
+	for _, arg := range args {
+		data := arg.GetBytesArg()
+		if len(data) == 0 {
+			return
+		}
+		switch event {
+		case "sys_enter_write":
+			parseResponseMessage(data, namespace, pod, binary)
+		case "sys_enter_read":
+			parseRequestMessage(data, namespace, pod, binary)
+		}
 	}
 }
 

@@ -8,7 +8,7 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
-	"strings"
+	"strconv"
 
 	v1 "github.com/cilium/hubble/pkg/api/v1"
 	"github.com/cilium/tetragon/api/v1/tetragon"
@@ -71,14 +71,10 @@ func GetProcessInfo(process *tetragon.Process) (binary, pod, namespace string) {
 
 func parseResponseMessage(value []byte, namespace, pod, binary string) {
 	// try to parse the buf as http response
-	//resp, err := http.ReadResponse(bufio.NewReader(bytes.NewReader(value)), nil)
-	//if err != nil {
-	//	//fmt.Printf("Failed to parse Response, %s\n", err)
-	//	return
-	//}
-
-	if strings.Contains(string(value), "HTTP/1.1 200 OK") {
-		TracePointHttpResponse.WithLabelValues(namespace, pod, binary, "200").Inc()
+	resp, err := http.ReadResponse(bufio.NewReader(bytes.NewReader(value)), nil)
+	if err != nil {
+		fmt.Printf("Failed to parse Response, %s\n", err)
+		return
 	}
 
 	//body := resp.Body
@@ -90,7 +86,7 @@ func parseResponseMessage(value []byte, namespace, pod, binary string) {
 	//	color.GreenString("%s", resp.Header["Content-Type"]),
 	//	color.GreenString("%s", string(b)))
 
-	//TracePointHttpResponse.WithLabelValues(namespace, pod, binary, strconv.Itoa(resp.StatusCode)).Inc()
+	TracePointHttpResponse.WithLabelValues(namespace, pod, binary, strconv.Itoa(resp.StatusCode)).Inc()
 }
 
 func parseRequestMessage(value []byte, namespace, pod, binary string) {
@@ -100,9 +96,9 @@ func parseRequestMessage(value []byte, namespace, pod, binary string) {
 		//fmt.Printf("Failed to parse Request, %s\n", err)
 		return
 	}
-	if req.Method == "ET" {
-		fmt.Println(string(value))
-	}
+	//if req.Method == "ET" {
+	//	fmt.Println(string(value))
+	//}
 
 	//fmt.Printf("\nProtocol: %s, Method: %s, URI: %s, Host: %s\n",
 	//	color.GreenString("%s", req.Proto),

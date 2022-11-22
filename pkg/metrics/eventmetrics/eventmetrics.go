@@ -76,6 +76,10 @@ func parseResponseMessage(value []byte, namespace, pod, binary string) {
 		return
 	}
 
+	//if strings.Contains(string(value), "HTTP/1.1 200 OK") {
+	//	TracePointHttpResponse.WithLabelValues(namespace, pod, binary, "200").Inc()
+	//}
+
 	//body := resp.Body
 	//b, _ := ioutil.ReadAll(body)
 	//body.Close()
@@ -84,6 +88,7 @@ func parseResponseMessage(value []byte, namespace, pod, binary string) {
 	//	color.GreenString("%d", resp.ContentLength),
 	//	color.GreenString("%s", resp.Header["Content-Type"]),
 	//	color.GreenString("%s", string(b)))
+
 	TracePointHttpResponse.WithLabelValues(namespace, pod, binary, strconv.Itoa(resp.StatusCode)).Inc()
 }
 
@@ -94,6 +99,9 @@ func parseRequestMessage(value []byte, namespace, pod, binary string) {
 		//fmt.Printf("Failed to parse Request, %s\n", err)
 		return
 	}
+	//if req.Method == "ET" {
+	//	fmt.Println(string(value))
+	//}
 
 	//fmt.Printf("\nProtocol: %s, Method: %s, URI: %s, Host: %s\n",
 	//	color.GreenString("%s", req.Proto),

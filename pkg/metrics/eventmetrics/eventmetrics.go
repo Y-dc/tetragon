@@ -73,7 +73,7 @@ func parseResponseMessage(value []byte, namespace, pod, binary string) {
 	// try to parse the buf as http response
 	resp, err := http.ReadResponse(bufio.NewReader(bytes.NewReader(value)), nil)
 	if err != nil {
-		fmt.Printf("Failed to parse Response: %s\n msg: %s\n", err, value)
+		fmt.Printf("Failed to parse Response: %s\n Msg: %s\n", err, value)
 		return
 	}
 

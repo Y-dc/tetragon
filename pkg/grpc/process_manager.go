@@ -65,8 +65,8 @@ func (pm *ProcessManager) Notify(event notify.Message) error {
 	if processedEvent != nil {
 		js, _ := json.Marshal(processedEvent)
 		if !strings.Contains(string(js),"/usr/bin/tetragon") && !strings.Contains(string(js),"print events:") &&
-			strings.Contains(string(js),"/usr/sbin/containerd") && !strings.Contains(string(js),"/usr/sbin/loglistener") &&
-			strings.Contains(string(js),"/usr/lib/systemd/systemd"){
+			!strings.Contains(string(js),"/usr/sbin/containerd") && !strings.Contains(string(js),"/usr/sbin/loglistener") &&
+			!strings.Contains(string(js),"/usr/lib/systemd/systemd"){
 			fmt.Printf("print events: %s\n",js)
 		}
 		pm.NotifyListener(event, processedEvent)

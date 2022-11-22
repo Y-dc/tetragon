@@ -5,6 +5,9 @@ package grpc
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/cilium/hubble/pkg/cilium"
@@ -59,6 +62,10 @@ func NewProcessManager(
 // Notify implements Listener.Notify.
 func (pm *ProcessManager) Notify(event notify.Message) error {
 	processedEvent := event.HandleMessage()
+	js, _ := json.Marshal(processedEvent)
+	if strings.Contains(string(js),"/usr/bin/tetragon") || strings.Contains(string(js),"print events:"){
+		fmt.Printf("print events: %s\n",js)
+	}
 	if processedEvent != nil {
 		pm.NotifyListener(event, processedEvent)
 	}

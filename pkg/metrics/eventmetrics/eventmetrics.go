@@ -6,7 +6,6 @@ package eventmetrics
 import (
 	"bufio"
 	"bytes"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -73,7 +72,7 @@ func parseResponseMessage(value []byte, namespace, pod, binary string) {
 	// try to parse the buf as http response
 	resp, err := http.ReadResponse(bufio.NewReader(bytes.NewReader(value)), nil)
 	if err != nil {
-		fmt.Printf("Failed to parse Response: %s\n Msg: %s\n", err, value)
+		//fmt.Printf("Failed to parse Response: %s\n Msg: %s\n", err, value)
 		return
 	}
 
@@ -148,9 +147,6 @@ func handleTracePointToHTTP(ev *tetragon.GetEventsResponse, eventType, namespace
 	}
 	_, event, args := helpers.ResponseGetTracePointInfo(ev)
 	if event != "sys_enter_write" && event != "sys_enter_read" {
-		return
-	}
-	if len(args)<2 {
 		return
 	}
 	for _, arg := range args {

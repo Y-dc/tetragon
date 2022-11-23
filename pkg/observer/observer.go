@@ -160,7 +160,7 @@ func (k *Observer) getRBSize(cpus int) int {
 	var size int
 
 	if option.Config.RBSize == 0 && option.Config.RBSizeTotal == 0 {
-		size = perCPUBufferBytes * 100
+		size = perCPUBufferBytes
 	} else if option.Config.RBSize != 0 {
 		size = option.Config.RBSize
 	} else {
@@ -217,7 +217,7 @@ func (k *Observer) runEvents(stopCtx context.Context, ready func()) error {
 				}
 			} else {
 				if len(record.RawSample) > 0 {
-					k.receiveEvent(record.RawSample, record.CPU)
+					go k.receiveEvent(record.RawSample, record.CPU)
 					ringbufmetrics.ReceivedSet(float64(k.recvCntr))
 				}
 

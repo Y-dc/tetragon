@@ -119,24 +119,36 @@ func HandlePerfData(data []byte) (byte, []Event, error) {
 
 func (k *Observer) receiveEvent(data []byte, cpu int) {
 	k.recvCntr++
-	op, events, err := HandlePerfData(data)
-	opcodemetrics.OpTotalInc(int(op))
-	if err != nil {
-		// Increment error metrics
-		errormetrics.ErrorTotalInc(errormetrics.HandlerError)
-		errormetrics.HandlerErrorsInc(int(op), err)
-		switch e := err.(type) {
-		case handlePerfUnknownOp:
-			k.log.WithField("opcode", e.op).Debug("unknown opcode ignored")
-		case *handlePerfHandlerErr:
-			k.log.WithError(e.err).WithField("opcode", e.op).Debug("error occurred in event handler")
-		default:
-			k.log.WithError(err).Debug("error occurred in event handler")
+	k.rcvChan <- struct{}{}
+	go func(data []byte, cpu int) {
+		defer func() {
+			<- k.rcvChan
+		}()
+		op, events, err := HandlePerfData(data)
+		opcodemetrics.OpTotalInc(int(op))
+		if err != nil {
+			// Increment error metrics
+			errormetrics.ErrorTotalInc(errormetrics.HandlerError)
+			errormetrics.HandlerErrorsInc(int(op), err)
+			switch e := err.(type) {
+			case handlePerfUnknownOp:
+				k.log.WithField("opcode", e.op).Debug("unknown opcode ignored")
+			case *handlePerfHandlerErr:
+				k.log.WithError(e.err).WithField("opcode", e.op).Debug("error occurred in event handler")
+			default:
+				k.log.WithError(err).Debug("error occurred in event handler")
+			}
 		}
-	}
-	for _, event := range events {
-		k.observerListeners(event)
-	}
+		var group sync.WaitGroup
+		group.Add(len(events))
+		for _, event := range events {
+			go func(event Event){
+				defer group.Done()
+				k.observerListeners(event)
+			}(event)
+		}
+		group.Wait()
+	}(data, cpu)
 }
 
 // Gets final size for single perf ring buffer rounded from
@@ -254,6 +266,9 @@ type Observer struct {
 
 	/* YAML Configuration File */
 	configFile string
+
+	/* receive events channel */
+	rcvChan chan struct{}
 }
 
 // UpdateRuntimeConf() Gathers information about Tetragon runtime environment and
@@ -304,6 +319,7 @@ func NewObserver(configFile string) *Observer {
 		listeners:  make(map[Listener]struct{}),
 		log:        logger.GetLogger(),
 		configFile: configFile,
+		rcvChan:    make(chan struct{}, 1000), // todo unique config to set
 	}
 	observerList = append(observerList, o)
 	return o
@@ -312,6 +328,7 @@ func NewObserver(configFile string) *Observer {
 func (k *Observer) Remove() {
 	for i, obs := range observerList {
 		if obs == k {
+			close(k.rcvChan)
 			observerList = append(observerList[:i], observerList[i+1:]...)
 			break
 		}

@@ -139,6 +139,7 @@ func (k *Observer) receiveEvent() {
 		for _, event := range events {
 			k.observerListeners(event)
 		}
+		ringbufmetrics.ReceivedSet(float64(k.recvCntr))
 	}
 	//k.recvCntr++
 	//op, events, err := HandlePerfData(data)
@@ -242,7 +243,7 @@ func (k *Observer) runEvents(stopCtx context.Context, ready func()) error {
 				if len(record.RawSample) > 0 {
 					//k.receiveEvent(record.RawSample, record.CPU)
 					k.rcvChan <- &record
-					ringbufmetrics.ReceivedSet(float64(k.recvCntr))
+					//ringbufmetrics.ReceivedSet(float64(k.recvCntr))
 				}
 
 				if record.LostSamples > 0 {

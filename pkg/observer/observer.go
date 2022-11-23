@@ -119,6 +119,7 @@ func HandlePerfData(data []byte) (byte, []Event, error) {
 
 func (k *Observer) receiveEvent(data []byte, cpu int) {
 	k.recvCntr++
+	return
 	k.rcvChan <- struct{}{}
 	go func(data []byte, cpu int) {
 		defer func() {

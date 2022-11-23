@@ -227,6 +227,7 @@ func (k *Observer) runEvents(stopCtx context.Context, ready func()) error {
 	defer wg.Wait()
 	go func() {
 		defer wg.Done()
+		go k.receiveEvent()
 		for stopCtx.Err() == nil {
 			record, err := perfReader.Read()
 			if err != nil {

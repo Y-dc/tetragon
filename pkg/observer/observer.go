@@ -117,26 +117,48 @@ func HandlePerfData(data []byte) (byte, []Event, error) {
 	return op, events, err
 }
 
-func (k *Observer) receiveEvent(data []byte, cpu int) {
-	k.recvCntr++
-	op, events, err := HandlePerfData(data)
-	opcodemetrics.OpTotalInc(int(op))
-	if err != nil {
-		// Increment error metrics
-		errormetrics.ErrorTotalInc(errormetrics.HandlerError)
-		errormetrics.HandlerErrorsInc(int(op), err)
-		switch e := err.(type) {
-		case handlePerfUnknownOp:
-			k.log.WithField("opcode", e.op).Debug("unknown opcode ignored")
-		case *handlePerfHandlerErr:
-			k.log.WithError(e.err).WithField("opcode", e.op).Debug("error occurred in event handler")
-		default:
-			k.log.WithError(err).Debug("error occurred in event handler")
+//func (k *Observer) receiveEvent(data []byte, cpu int) {
+func (k *Observer) receiveEvent() {
+	for record := range k.rcvChan {
+		k.recvCntr++
+		op, events, err := HandlePerfData(record.RawSample)
+		opcodemetrics.OpTotalInc(int(op))
+		if err != nil {
+			// Increment error metrics
+			errormetrics.ErrorTotalInc(errormetrics.HandlerError)
+			errormetrics.HandlerErrorsInc(int(op), err)
+			switch e := err.(type) {
+			case handlePerfUnknownOp:
+				k.log.WithField("opcode", e.op).Debug("unknown opcode ignored")
+			case *handlePerfHandlerErr:
+				k.log.WithError(e.err).WithField("opcode", e.op).Debug("error occurred in event handler")
+			default:
+				k.log.WithError(err).Debug("error occurred in event handler")
+			}
+		}
+		for _, event := range events {
+			k.observerListeners(event)
 		}
 	}
-	for _, event := range events {
-		k.observerListeners(event)
-	}
+	//k.recvCntr++
+	//op, events, err := HandlePerfData(data)
+	//opcodemetrics.OpTotalInc(int(op))
+	//if err != nil {
+	//	// Increment error metrics
+	//	errormetrics.ErrorTotalInc(errormetrics.HandlerError)
+	//	errormetrics.HandlerErrorsInc(int(op), err)
+	//	switch e := err.(type) {
+	//	case handlePerfUnknownOp:
+	//		k.log.WithField("opcode", e.op).Debug("unknown opcode ignored")
+	//	case *handlePerfHandlerErr:
+	//		k.log.WithError(e.err).WithField("opcode", e.op).Debug("error occurred in event handler")
+	//	default:
+	//		k.log.WithError(err).Debug("error occurred in event handler")
+	//	}
+	//}
+	//for _, event := range events {
+	//	k.observerListeners(event)
+	//}
 }
 
 // Gets final size for single perf ring buffer rounded from
@@ -206,6 +228,7 @@ func (k *Observer) runEvents(stopCtx context.Context, ready func()) error {
 	defer wg.Wait()
 	go func() {
 		defer wg.Done()
+		go k.receiveEvent()
 		for stopCtx.Err() == nil {
 			record, err := perfReader.Read()
 			if err != nil {
@@ -217,7 +240,8 @@ func (k *Observer) runEvents(stopCtx context.Context, ready func()) error {
 				}
 			} else {
 				if len(record.RawSample) > 0 {
-					go k.receiveEvent(record.RawSample, record.CPU)
+					//k.receiveEvent(record.RawSample, record.CPU)
+					k.rcvChan <- &record
 					ringbufmetrics.ReceivedSet(float64(k.recvCntr))
 				}
 
@@ -254,6 +278,9 @@ type Observer struct {
 
 	/* YAML Configuration File */
 	configFile string
+
+	/* receive events channel */
+	rcvChan chan *perf.Record
 }
 
 // UpdateRuntimeConf() Gathers information about Tetragon runtime environment and
@@ -304,6 +331,7 @@ func NewObserver(configFile string) *Observer {
 		listeners:  make(map[Listener]struct{}),
 		log:        logger.GetLogger(),
 		configFile: configFile,
+		rcvChan:    make(chan *perf.Record, option.Config.EventQueueSize), // todo unique config to set
 	}
 	observerList = append(observerList, o)
 	return o
@@ -312,6 +340,7 @@ func NewObserver(configFile string) *Observer {
 func (k *Observer) Remove() {
 	for i, obs := range observerList {
 		if obs == k {
+			close(k.rcvChan)
 			observerList = append(observerList[:i], observerList[i+1:]...)
 			break
 		}

@@ -33,7 +33,7 @@ struct filter_map_value {
 /* Arrays of size 1 will be rewritten to direct loads in verifier */
 struct {
 	__uint(type, BPF_MAP_TYPE_ARRAY);
-	__uint(max_entries, 2);
+	__uint(max_entries, 1);
 	__type(key, int);
 	__type(value, struct filter_map_value);
 } filter_map SEC(".maps");
@@ -89,7 +89,7 @@ static inline __attribute__((always_inline)) unsigned long get_ctx_ul(void *src,
 
 	case char_buf: {
 		char *buff;
-		probe_read(&buff, sizeof(char *), src);
+		probe_read(&buff, 4000 < sizeof(char *) ? 4000 : sizeof(char *), src);
 		return (unsigned long)buff;
 	}
 

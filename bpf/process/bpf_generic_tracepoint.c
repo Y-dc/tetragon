@@ -11,6 +11,7 @@
 #include "types/basic.h"
 #include "generic_calls.h"
 #include "pfilter.h"
+#include "string.h"
 
 struct {
 	__uint(type, BPF_MAP_TYPE_PROG_ARRAY);

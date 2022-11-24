@@ -88,11 +88,15 @@ static inline __attribute__((always_inline)) unsigned long get_ctx_ul(void *src,
 	}
 
 	case char_buf: {
-		char buff[1024];
-		char *p;
-		p = &buff[0];
+		char *buff;
 		probe_read(&buff, sizeof(char *), src);
-		return (unsigned long)p;
+		if (strlen(*buff) >= 1024) {
+		    char subtext[1024];
+		    strncpy(subtext,&buff[0],1023);
+		    subtext[1023] = '\0';
+		    buff = &subtext[0];
+		}
+		return (unsigned long)buff;
 	}
 
 	case const_buf_type: {

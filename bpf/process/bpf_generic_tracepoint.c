@@ -89,7 +89,10 @@ static inline __attribute__((always_inline)) unsigned long get_ctx_ul(void *src,
 
 	case char_buf: {
 		char *buff;
-		probe_read(&buff, 1000 < sizeof(char *) ? 1000 : sizeof(char *), src);
+		trace_printk("size %d",sizeof(char *));
+		probe_read(&buff, sizeof(char *), src);
+		trace_printk("src: %s",*src);
+		trace_printk("buff: %s", *buff);
 		return (unsigned long)buff;
 	}
 
@@ -122,6 +125,7 @@ generic_tracepoint_event(struct generic_tracepoint_event_arg *ctx)
 	msg->a0 = ({
 		unsigned long ctx_off = config->t_arg0_ctx_off;
 		int ty = config->arg0;
+		trace_printk("a0 ctx_off: %d", ctx_off);
 		asm volatile("%[ctx_off] &= 0xffff;\n" ::[ctx_off] "+r"(ctx_off)
 			     :);
 		get_ctx_ul((char *)ctx + ctx_off, ty);
@@ -130,6 +134,7 @@ generic_tracepoint_event(struct generic_tracepoint_event_arg *ctx)
 	msg->a1 = ({
 		unsigned long ctx_off = config->t_arg1_ctx_off;
 		int ty = config->arg1;
+		trace_printk("a1 ctx_off: %d", ctx_off);
 		asm volatile("%[ctx_off] &= 0xffff;\n" ::[ctx_off] "+r"(ctx_off)
 			     :);
 		get_ctx_ul((char *)ctx + ctx_off, ty);

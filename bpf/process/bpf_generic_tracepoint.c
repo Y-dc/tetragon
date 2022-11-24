@@ -57,7 +57,7 @@ struct generic_tracepoint_event_arg {
 #define bpfprint(fmt, ...)                        \
     ({                                             \
         char ____fmt[] = fmt;                      \
-        bpf_trace_printk(____fmt, sizeof(____fmt), \
+        trace_printk(____fmt, sizeof(____fmt), \
                          ##__VA_ARGS__);           \
     })
 

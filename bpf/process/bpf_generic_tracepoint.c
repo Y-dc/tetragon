@@ -96,7 +96,7 @@ static inline __attribute__((always_inline)) unsigned long get_ctx_ul(void *src,
         int len = (cp - buff - 1);
 		if (len >= 1024) {
 		    char subtext[1024];
-		    strncpy(,&buff[0],1023);
+		    strncpy(subtext,&buff[0],1023);
 		    subtext[1023] = '\0';
 		    buff = &subtext[0];
 		}
@@ -113,7 +113,7 @@ static inline __attribute__((always_inline)) unsigned long get_ctx_ul(void *src,
 	}
 }
 
-char * strncpy (char * dest,const char * source,int count)
+static char * strncpy (char * dest,const char * source,int count)
 {
     char *start = dest;
     while (count && (*dest++ =*source++)) /* copy string */

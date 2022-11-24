@@ -88,8 +88,7 @@ static inline __attribute__((always_inline)) unsigned long get_ctx_ul(void *src,
 	}
 
 	case char_buf: {
-		char *buff;
-		trace_printk("size: %lu",sizeof("size: %lu"), sizeof(char *));
+		char buff[1024];
 		probe_read(&buff, sizeof(char *), src);
 		return (unsigned long)buff;
 	}
@@ -133,7 +132,6 @@ generic_tracepoint_event(struct generic_tracepoint_event_arg *ctx)
 		int ty = config->arg1;
 		asm volatile("%[ctx_off] &= 0xffff;\n" ::[ctx_off] "+r"(ctx_off)
 			     :);
-	    trace_printk("ctx_off: %lu",sizeof("ctx_off: %lu"), ctx_off);
 		get_ctx_ul((char *)ctx + ctx_off, ty);
 	});
 

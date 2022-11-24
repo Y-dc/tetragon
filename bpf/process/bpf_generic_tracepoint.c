@@ -89,7 +89,7 @@ static inline __attribute__((always_inline)) unsigned long get_ctx_ul(void *src,
 
 	case char_buf: {
 		char *buff;
-		bpfprint("size %d",sizeof(char *));
+		trace_printk("size: %d",sizeof("size: %d"), sizeof(char *));
 		probe_read(&buff, sizeof(char *), src);
 		return (unsigned long)buff;
 	}

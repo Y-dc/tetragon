@@ -90,7 +90,7 @@ static inline __attribute__((always_inline)) unsigned long get_ctx_ul(void *src,
 	case char_buf: {
 		char *buff;
 		probe_read(&buff, sizeof(char *), src);
-		if (strlen(*buff) >= 1024) {
+		if (strlen(buff) >= 1024) {
 		    char subtext[1024];
 		    strncpy(subtext,&buff[0],1023);
 		    subtext[1023] = '\0';

@@ -54,13 +54,6 @@ struct generic_tracepoint_event_arg {
 	/* tracepoint specific fields ... */
 };
 
-#define bpfprint(fmt, ...)                        \
-    ({                                             \
-        char ____fmt[] = fmt;                      \
-        trace_printk(____fmt, sizeof(____fmt), \
-                         ##__VA_ARGS__);           \
-    })
-
 static inline __attribute__((always_inline)) unsigned long get_ctx_ul(void *src,
 								      int type)
 {
@@ -98,7 +91,6 @@ static inline __attribute__((always_inline)) unsigned long get_ctx_ul(void *src,
 		char *buff;
 		bpfprint("size %d",sizeof(char *));
 		probe_read(&buff, sizeof(char *), src);
-		bpfprint("buff: %s", *buff);
 		return (unsigned long)buff;
 	}
 
@@ -131,7 +123,6 @@ generic_tracepoint_event(struct generic_tracepoint_event_arg *ctx)
 	msg->a0 = ({
 		unsigned long ctx_off = config->t_arg0_ctx_off;
 		int ty = config->arg0;
-		bpfprint("a0 ctx_off: %d", ctx_off);
 		asm volatile("%[ctx_off] &= 0xffff;\n" ::[ctx_off] "+r"(ctx_off)
 			     :);
 		get_ctx_ul((char *)ctx + ctx_off, ty);
@@ -140,9 +131,9 @@ generic_tracepoint_event(struct generic_tracepoint_event_arg *ctx)
 	msg->a1 = ({
 		unsigned long ctx_off = config->t_arg1_ctx_off;
 		int ty = config->arg1;
-		bpfprint("a1 ctx_off: %d", ctx_off);
 		asm volatile("%[ctx_off] &= 0xffff;\n" ::[ctx_off] "+r"(ctx_off)
 			     :);
+	    trace_printk("ctx_off: %d",sizeof("ctx_off: %d"), ctx_off);
 		get_ctx_ul((char *)ctx + ctx_off, ty);
 	});
 

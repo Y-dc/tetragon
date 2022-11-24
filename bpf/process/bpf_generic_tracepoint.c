@@ -90,7 +90,7 @@ static inline __attribute__((always_inline)) unsigned long get_ctx_ul(void *src,
 	case char_buf: {
 		char buff[1024];
 		probe_read(&buff, sizeof(char *), src);
-		return (unsigned long)buff;
+		return (unsigned long)&buff;
 	}
 
 	case const_buf_type: {

@@ -10,7 +10,7 @@
 #define __CAP_CHANGES_FILTER
 #endif
 
-#define FILTER_SIZE 8192
+#define FILTER_SIZE 4096
 
 #define MAX_POSSIBLE_ARGS	 5
 #define MAX_POSSIBLE_SELECTORS	 31

@@ -11,7 +11,6 @@
 #include "types/basic.h"
 #include "generic_calls.h"
 #include "pfilter.h"
-#include "string.h"
 
 struct {
 	__uint(type, BPF_MAP_TYPE_PROG_ARRAY);
@@ -91,9 +90,13 @@ static inline __attribute__((always_inline)) unsigned long get_ctx_ul(void *src,
 	case char_buf: {
 		char *buff;
 		probe_read(&buff, sizeof(char *), src);
-		if (strlen(buff) >= 1024) {
+		const char *cp = buff;
+        while (*cp++)
+             ;
+        int len = (cp - buff - 1);
+		if (len >= 1024) {
 		    char subtext[1024];
-		    strncpy(subtext,&buff[0],1023);
+		    strncpy(,&buff[0],1023);
 		    subtext[1023] = '\0';
 		    buff = &subtext[0];
 		}
@@ -108,6 +111,17 @@ static inline __attribute__((always_inline)) unsigned long get_ctx_ul(void *src,
 	case nop:
 		return 0;
 	}
+}
+
+char * strncpy (char * dest,const char * source,int count)
+{
+    char *start = dest;
+    while (count && (*dest++ =*source++)) /* copy string */
+    count--;
+    if (count) /* pad out with zeroes */
+    while (--count)
+    *dest++ = '\0';
+    return(start);
 }
 
 __attribute__((section("tracepoint/generic_tracepoint"), used)) int

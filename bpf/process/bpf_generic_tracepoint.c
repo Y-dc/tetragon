@@ -12,6 +12,8 @@
 #include "generic_calls.h"
 #include "pfilter.h"
 
+#define MAX_MSG_SIZE 1024
+
 struct {
 	__uint(type, BPF_MAP_TYPE_PROG_ARRAY);
 	__uint(max_entries, 11);
@@ -54,16 +56,16 @@ struct generic_tracepoint_event_arg {
 	/* tracepoint specific fields ... */
 };
 
-static char * stringcpy (char * dest,const char * source,int count)
-{
-    char *start = dest;
-    while (count && (*dest++ =*source++)) /* copy string */
-    count--;
-    if (count) /* pad out with zeroes */
-    while (--count)
-    *dest++ = '\0';
-    return(start);
-}
+//static char * stringcpy (char * dest,const char * source,int count)
+//{
+//    char *start = dest;
+//    while (count && (*dest++ =*source++)) /* copy string */
+//    count--;
+//    if (count) /* pad out with zeroes */
+//    while (--count)
+//    *dest++ = '\0';
+//    return(start);
+//}
 
 static inline __attribute__((always_inline)) unsigned long get_ctx_ul(void *src,
 								      int type)
@@ -99,19 +101,18 @@ static inline __attribute__((always_inline)) unsigned long get_ctx_ul(void *src,
 	}
 
 	case char_buf: {
-		char *buff;
+		char buff[MAX_MSG_SIZE];
 		probe_read(&buff, sizeof(char *), src);
-		const char *cp = buff;
-        while (*cp++)
-             ;
-        int len = (cp - buff - 1);
-		if (len >= 1024) {
-		    char subtext[1024];
-		    stringcpy(subtext,&buff[0],1023);
-		    subtext[1023] = '\0';
-		    buff = &subtext[0];
-		}
-		return (unsigned long)buff;
+//		char *cp = buff;
+//        while (*cp++)
+//             ;
+//		if (cp - buff - 1 >= 1024) {
+//		    char subtext[1024];
+//		    stringcpy(subtext,&buff[0],1023);
+//		    subtext[1023] = '\0';
+//		    buff = &subtext[0];
+//		}
+		return (unsigned long)&buff[0];
 	}
 
 	case const_buf_type: {

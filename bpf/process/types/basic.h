@@ -1023,6 +1023,7 @@ selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
 	case string_type:
 	case char_buf:
 		pass = filter_char_buf(filter, args);
+		trace_printk("filter_char_buf: paas(%d)",sizeof("filter_char_buf: pass(%d)"),pass);
 		break;
 	case s64_ty:
 	case u64_ty:
@@ -1288,7 +1289,7 @@ filter_read_arg(void *ctx, int index, struct bpf_map_def *heap,
 		// reject if we did not attempt to tailcall, or if tailcall failed.
 		return filter_args_reject(e->func_id);
 	}
-
+    trace_printk("filter_args paas: %s",sizeof("filter_args pass: %s"),pass)
 	// If pass >1 then we need to consult the selector actions
 	// otherwise pass==1 indicates using default action.
 	if (pass > 1) {
@@ -1460,6 +1461,7 @@ read_call_arg(void *ctx, struct msg_generic_kprobe *e, int index, int type,
 		size = copy_cred(args, arg);
 		break;
 	case char_buf:
+	    trace_printk("copy",sizeof("copy"));
 		size = copy_char_buf(ctx, orig_off, arg, argm, e);
 		break;
 	case char_iovec:

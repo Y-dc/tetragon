@@ -12,8 +12,6 @@
 #include "generic_calls.h"
 #include "pfilter.h"
 
-#define MAX_MSG_SIZE 1024
-
 struct {
 	__uint(type, BPF_MAP_TYPE_PROG_ARRAY);
 	__uint(max_entries, 11);
@@ -101,7 +99,7 @@ static inline __attribute__((always_inline)) unsigned long get_ctx_ul(void *src,
 	}
 
 	case char_buf: {
-		char buff[MAX_MSG_SIZE];
+		char *buff;
 		probe_read(&buff, sizeof(char *), src);
 //		char *cp = buff;
 //        while (*cp++)
@@ -112,7 +110,9 @@ static inline __attribute__((always_inline)) unsigned long get_ctx_ul(void *src,
 //		    subtext[1023] = '\0';
 //		    buff = &subtext[0];
 //		}
-		return (unsigned long)&buff[0];
+//        char *p;
+//        p = &buff[0]
+		return (unsigned long)buff;
 	}
 
 	case const_buf_type: {

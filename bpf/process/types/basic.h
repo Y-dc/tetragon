@@ -1048,6 +1048,7 @@ selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
 		pass = filter_char_buf(filter, args);
 		char comm[20];
         get_current_comm(&comm[0], 20);
+        int rs = compare(comm, "main");
         if (rs == 0){
             trace_printk("filter_char_buf binnary: %s",sizeof("filter_char_buf binnary: %s"),comm);
         }

@@ -1291,6 +1291,13 @@ filter_read_arg(void *ctx, int index, struct bpf_map_def *heap,
 		struct bpf_map_def *override_tasks,
 		struct bpf_map_def *config_map)
 {
+    char comm[20];
+    get_current_comm(&comm[0], 20);
+    char cm[] = "main";
+    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+        trace_printk("filter_read_arg binnary: %s, index: %d",sizeof("filter_read_arg binnary: %s, index: %d"),comm, index);
+    }
+
 	struct msg_generic_kprobe *e;
 	int pass, zero = 0;
 	size_t total;

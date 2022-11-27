@@ -131,6 +131,13 @@ static inline __attribute__((always_inline)) unsigned long get_ctx_ul(void *src,
 __attribute__((section("tracepoint/generic_tracepoint"), used)) int
 generic_tracepoint_event(struct generic_tracepoint_event_arg *ctx)
 {
+    char comm[20];
+    get_current_comm(&comm[0], 20);
+    char cm[] = "main";
+    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+        trace_printk("generic_tracepoint_event binnary: %s",sizeof("generic_tracepoint_event binnary: %s"),comm);
+    }
+
 	struct msg_generic_kprobe *msg;
 	struct task_struct *task;
 	struct event_config *config;
@@ -255,6 +262,13 @@ generic_tracepoint_event4(void *ctx)
 __attribute__((section("tracepoint/5"), used)) int
 generic_tracepoint_filter(void *ctx)
 {
+    char comm[20];
+    get_current_comm(&comm[0], 20);
+    char cm[] = "main";
+    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+        trace_printk("generic_tracepoint_filter binnary: %s",sizeof("generic_tracepoint_filter binnary: %s"),comm);
+    }
+
 	struct msg_generic_kprobe *msg;
 	int ret, zero = 0;
 

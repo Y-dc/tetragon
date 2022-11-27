@@ -136,13 +136,6 @@ generic_tracepoint_event(struct generic_tracepoint_event_arg *ctx)
 	if (!msg)
 		return 0;
 
-    char comm[20];
-    get_current_comm(&comm[0], 20);
-    char cm[] = "main";
-    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-        trace_printk("generic_tracepoint_event binnary: %s, func_id: %d",sizeof("generic_tracepoint_event binnary: %s, func_id: %d"),comm, msg->func_id);
-    }
-
 	config = map_lookup_elem(&config_map, &zero);
 	if (!config)
 		return 0;

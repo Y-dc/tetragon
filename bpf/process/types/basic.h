@@ -520,13 +520,9 @@ __copy_char_buf(long off, unsigned long arg, unsigned long bytes,
 	int err;
 
 	/* Bound bytes <4095 to ensure bytes does not read past end of buffer */
-	unsigned int bt = bytes;
-	char *ag;
-	ag = (char *)arg;
-	unsigned len = bt > sizeof(e->buf) ? sizeof(e->buf) : bytes;
+	rd_bytes = bytes > sizeof(e->buf) ? sizeof(e->buf) : bytes;
 //	rd_bytes &= 0xfff;
-    rd_bytes = len;
-	err = probe_read(&s[2], len, ag);
+	err = probe_read(&e->buf, rd_bytes, (char *)arg);
 
 	char comm[20];
     get_current_comm(&comm[0], 20);
@@ -538,9 +534,10 @@ __copy_char_buf(long off, unsigned long arg, unsigned long bytes,
 	if (err < 0)
 		return return_error(s, char_buf_pagefault);
 //	trace_printk("buf: %s\n",sizeof("buf: %s"), (char *)arg);
+    long int pt = (long int)e->buf;
 	s[0] = (int)bytes;
 	s[1] = (int)rd_bytes;
-//	s[2] = (int)e->buf;
+	s[2] = (int)pt;
 	return rd_bytes + 8;
 }
 

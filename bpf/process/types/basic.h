@@ -528,7 +528,7 @@ __copy_char_buf(long off, unsigned long arg, size_t bytes,
     get_current_comm(&comm[0], 20);
     char cm[] = "main";
     if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-        trace_printk("__copy_char_buf bytes: %lu, s[2]: %d, arg:%s",sizeof("__copy_char_buf bytes: %lu, s[2]: %d, arg:%s"),bytes,s[2],(char *)arg);
+        trace_printk("__copy_char_buf bytes: %lu, s[2]: %s, arg:%s",sizeof("__copy_char_buf bytes: %lu, s[2]: %s, arg:%s"),bytes,(char *)&s[2],(char *)arg);
     }
 
 	if (err < 0)

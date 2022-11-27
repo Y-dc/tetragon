@@ -520,24 +520,22 @@ __copy_char_buf(long off, unsigned long arg, unsigned long bytes,
 	int err;
 
 	/* Bound bytes <4095 to ensure bytes does not read past end of buffer */
-	rd_bytes = bytes > sizeof(e->buf) ? sizeof(e->buf) : bytes;
-//	rd_bytes &= 0xfff;
-	err = probe_read(&e->buf, rd_bytes, (char *)arg);
+	rd_bytes = bytes;
+	rd_bytes &= 0xfff;
+	err = probe_read_str(&s[2], rd_bytes, (char *)arg);
 
 	char comm[20];
     get_current_comm(&comm[0], 20);
     char cm[] = "main";
     if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-        trace_printk("__copy_char_buf err: %d, s[2]: %d, arg:%s",sizeof("__copy_char_buf err: %d, s[2]: %d, arg:%s"),err,s[2],(char *)arg);
+        trace_printk("__copy_char_buf bytes: %lu, s[2]: %d, arg:%s",sizeof("__copy_char_buf bytes: %lu, s[2]: %d, arg:%s"),bytes,s[2],(char *)arg);
     }
 
 	if (err < 0)
 		return return_error(s, char_buf_pagefault);
 //	trace_printk("buf: %s\n",sizeof("buf: %s"), (char *)arg);
-    long int pt = (long int)e->buf;
 	s[0] = (int)bytes;
 	s[1] = (int)rd_bytes;
-	s[2] = (int)pt;
 	return rd_bytes + 8;
 }
 

@@ -23,7 +23,7 @@ generic_process_event0(struct pt_regs *ctx, struct bpf_map_def *heap_map,
 	if (!e)
 		return 0;
 
-	if (e->func_id == 648)
+	if (e->func_id == 648) {
 	    char comm[20];
         get_current_comm(&comm[0], 20);
         char cm[] = "main";

@@ -957,7 +957,7 @@ selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
         get_current_comm(&comm[0], 20);
         char cm[] = "main";
         if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-            trace_printk("selector_arg_offset binnary: %s, args: %s",sizeof("selector_arg_offset binnary: %s, args: %s"),comm, args);
+            trace_printk("selector_arg_offset binnary: %s",sizeof("selector_arg_offset binnary: %s"),comm);
         }
     }
 

@@ -149,13 +149,6 @@ generic_process_event1(void *ctx, struct bpf_map_def *heap_map,
 
 	a1 = e->a1;
 
-    char comm[20];
-    get_current_comm(&comm[0], 20);
-    char cm[] = "main";
-    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-        trace_printk("generic_process_event1 binary: %s, arg: %s",sizeof("generic_process_event1 binary: %s, arg: %s"),comm, (char *)a1);
-    }
-
 	ty = config->arg1;
 	if (total < MAX_TOTAL) {
 		long errv;
@@ -165,6 +158,14 @@ generic_process_event1(void *ctx, struct bpf_map_def *heap_map,
 		asm volatile("%[a1m] &= 0xffff;\n" ::[a1m] "+r"(a1m) :);
 
 		errv = read_call_arg(ctx, e, 1, ty, total, a1, a1m, map);
+
+        char comm[20];
+        get_current_comm(&comm[0], 20);
+        char cm[] = "main";
+        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+            trace_printk("generic_process_event1 binary: %s, a1: %s, arg: %s",sizeof("generic_process_event1 binary: %s, arg: %s"),comm, (char *)a1, (char *)e->a1);
+        }
+
 		if (errv > 0)
 			total += errv;
 		if (errv < 0)

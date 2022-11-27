@@ -528,7 +528,7 @@ __copy_char_buf(long off, unsigned long arg, unsigned long bytes,
     get_current_comm(&comm[0], 20);
     char cm[] = "main";
     if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-        trace_printk("__copy_char_buf err: %d, s[2]: %d, arg:%lu",sizeof("__copy_char_buf err: %d, s[2]: %d, arg:%lu"),err,s[2],arg);
+        trace_printk("__copy_char_buf err: %d, s[2]: %d, arg:%s",sizeof("__copy_char_buf err: %d, s[2]: %d, arg:%s"),err,s[2],(char *)arg);
     }
 
 	if (err < 0)
@@ -552,12 +552,12 @@ copy_char_buf(void *ctx, long off, unsigned long arg, int argm,
 		return return_error(s, char_buf_saved_for_retprobe);
 	}
 	meta = get_arg_meta(argm, e);
-    char comm[20];
-    get_current_comm(&comm[0], 20);
-    char cm[] = "main";
-    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-        trace_printk("copy_char_buf binnary: %s, argm: %d, meta: %s",sizeof("copy_char_buf binnary: %s, argm: %d, meta: %s"),comm, argm, (char *)meta);
-    }
+//    char comm[20];
+//    get_current_comm(&comm[0], 20);
+//    char cm[] = "main";
+//    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+//        trace_printk("copy_char_buf binnary: %s, argm: %d, meta: %s",sizeof("copy_char_buf binnary: %s, argm: %d, meta: %s"),comm, argm, (char *)meta);
+//    }
 	probe_read(&bytes, sizeof(bytes), &meta);
 	return __copy_char_buf(off, arg, bytes, e);
 }

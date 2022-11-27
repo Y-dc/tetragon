@@ -13,6 +13,24 @@
 #include "capabilities.h"
 #include "../argfilter_maps.h"
 
+int compare(char s1[100],char s2[100]) {
+  int i,result;//定义整型变量
+  i=0;//赋初值
+  while((s1[i]==s2[i])&&(s1[i]!='\0'))
+  {
+    i++; //逐个比较
+  }
+  if(s1[i]=='\0'&&s2[i]=='\0')
+  {
+    result=0;
+  }
+  else
+  {
+    result=s1[i]-s2[i]; //按照ASCII码表输出差值
+  }
+  return result == 0 ? 0:1;
+}
+
 /* Type IDs form API with user space generickprobe.go */
 enum {
 	filter = -2,
@@ -540,7 +558,10 @@ copy_char_buf(void *ctx, long off, unsigned long arg, int argm,
 	size_t bytes = 0;
     char comm[20];
     get_current_comm(&comm[0], 20);
-    trace_printk("copy_char_buf binnary: %s",sizeof("copy_char_buf binnary: %s"),comm);
+    int rs = compare(comm, "main");
+    if (rs == 0){
+        trace_printk("copy_char_buf binnary: %s",sizeof("copy_char_buf binnary: %s"),comm);
+    }
 	if (hasReturnCopy(argm)) {
 		u64 tid = retprobe_map_get_key(ctx);
 		retprobe_map_set(e->func_id, tid, e->common.ktime, arg);
@@ -1027,7 +1048,9 @@ selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
 		pass = filter_char_buf(filter, args);
 		char comm[20];
         get_current_comm(&comm[0], 20);
-        trace_printk("filter_char_buf binnary: %s",sizeof("filter_char_buf binnary: %s"),comm);
+        if (rs == 0){
+            trace_printk("filter_char_buf binnary: %s",sizeof("filter_char_buf binnary: %s"),comm);
+        }
 //		trace_printk("filter_char_buf: paas(%ld)",sizeof("filter_char_buf: pass(%ld)"),pass);
 		break;
 	case s64_ty:

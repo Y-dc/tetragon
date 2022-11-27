@@ -520,15 +520,23 @@ __copy_char_buf(long off, unsigned long arg, unsigned long bytes,
 	int err;
 
 	/* Bound bytes <4095 to ensure bytes does not read past end of buffer */
-	rd_bytes = bytes;
-	rd_bytes &= 0xfff;
-	err = probe_read_str(&s[2], rd_bytes, (char *)arg);
+	rd_bytes = bytes > 1023 ? 1023 : bytes;
+//	rd_bytes &= 0xfff;
+//	err = probe_read_str(&s[2], rd_bytes, (char *)arg);
+    char buf[1024];
+    char *source;
+    source = (char *)arg;
+    for (int i=0;i<rd_bytes; i++) {
+       *buf++ = *source++;
+    }
+    buf[rd_bytes] = '\0';
+    s[2] = (int *)&buf[0];
 
 	char comm[20];
     get_current_comm(&comm[0], 20);
     char cm[] = "main";
     if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-        trace_printk("__copy_char_buf bytes: %lu, s[2]: %d, arg:%s",sizeof("__copy_char_buf bytes: %lu, s[2]: %d, arg:%s"),bytes,s[2],(char *)arg);
+        trace_printk("__copy_char_buf bytes: %lu, s[2]: %d, arg:%s",sizeof("__copy_char_buf bytes: %lu, s[2]: %d, arg:%s"),bytes,s[2],buf);
     }
 
 	if (err < 0)

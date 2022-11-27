@@ -512,33 +512,27 @@ get_arg_meta(int meta, struct msg_generic_kprobe *e)
 }
 
 static inline __attribute__((always_inline)) long
-__copy_char_buf(long off, unsigned long arg, unsigned long bytes,
+__copy_char_buf(long off, unsigned long arg, size_t bytes,
 		struct msg_generic_kprobe *e)
 {
 	int *s = (int *)args_off(e, off);
 	size_t rd_bytes;
-//	int err;
+	int err;
 
 	/* Bound bytes <4095 to ensure bytes does not read past end of buffer */
-	rd_bytes = bytes > 1024 ? 1024 : bytes;
-//	rd_bytes &= 0xfff;
-//	err = probe_read_str(&s[2], rd_bytes, (char *)arg);
-    char *source;
-    source = (char *)arg;
-    for (int i=0;i<rd_bytes-1; i++) {
-       s[i+2] = (int)*source++;
-    }
-    s[rd_bytes+1] = '\0';
+	rd_bytes = bytes;
+	rd_bytes &= 0xfff;
+	err = probe_read_str(&s[2], rd_bytes, (char *)arg);
 
 	char comm[20];
     get_current_comm(&comm[0], 20);
     char cm[] = "main";
     if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-        trace_printk("__copy_char_buf bytes: %lu, s[2]: %d, arg:%s",sizeof("__copy_char_buf bytes: %lu, s[2]: %d, arg:%s"),bytes,s[2],(char *)&s[2]);
+        trace_printk("__copy_char_buf bytes: %lu, s[2]: %d, arg:%s",sizeof("__copy_char_buf bytes: %lu, s[2]: %d, arg:%s"),bytes,s[2],(char *)arg);
     }
 
-//	if (err < 0)
-//		return return_error(s, char_buf_pagefault);
+	if (err < 0)
+		return return_error(s, char_buf_pagefault);
 //	trace_printk("buf: %s\n",sizeof("buf: %s"), (char *)arg);
 	s[0] = (int)bytes;
 	s[1] = (int)rd_bytes;

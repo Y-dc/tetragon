@@ -148,6 +148,7 @@ generic_process_event1(void *ctx, struct bpf_map_def *heap_map,
 	total = e->common.size;
 
 	a1 = e->a1;
+	e->a2 = e->a2 > 1024 ? 1024 : e->a2;
 
 	ty = config->arg1;
 	if (total < MAX_TOTAL) {

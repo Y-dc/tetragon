@@ -140,14 +140,14 @@ generic_tracepoint_event(struct generic_tracepoint_event_arg *ctx)
 	if (!config)
 		return 0;
 
-	if (config->func_id == 640) {
-        char comm[20];
-        get_current_comm(&comm[0], 20);
-        char cm[] = "main";
-        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-            trace_printk("generic_tracepoint_event binnary: %s",sizeof("generic_tracepoint_event binnary: %s"),comm);
-        }
-    }
+//	if (config->func_id == 640) {
+//        char comm[20];
+//        get_current_comm(&comm[0], 20);
+//        char cm[] = "main";
+//        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+//            trace_printk("generic_tracepoint_event binnary: %s",sizeof("generic_tracepoint_event binnary: %s"),comm);
+//        }
+//    }
 
 	msg->a0 = ({
 		unsigned long ctx_off = config->t_arg0_ctx_off;

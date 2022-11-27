@@ -952,14 +952,14 @@ static inline __attribute__((always_inline)) size_t type_to_min_size(int type,
 static inline __attribute__((always_inline)) int
 selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
 {
-    if (e->func_id == 640) {
-        char comm[20];
-        get_current_comm(&comm[0], 20);
-        char cm[] = "main";
-        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-            trace_printk("selector_arg_offset binnary: %s",sizeof("selector_arg_offset binnary: %s"),comm);
-        }
-    }
+//    if (e->func_id == 640) {
+//        char comm[20];
+//        get_current_comm(&comm[0], 20);
+//        char cm[] = "main";
+//        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+//            trace_printk("selector_arg_offset binnary: %s",sizeof("selector_arg_offset binnary: %s"),comm);
+//        }
+//    }
 
 	struct selector_arg_filter *filter;
 	struct selector_binary_filter *binary;
@@ -1045,14 +1045,14 @@ selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
 	case string_type:
 	case char_buf:
 		pass = filter_char_buf(filter, args);
-        if (e->func_id == 640) {
-            char comm[20];
-            get_current_comm(&comm[0], 20);
-            char cm[] = "main";
-            if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-                trace_printk("filter_char_buf binnary: %s, args: %s",sizeof("filter_char_buf binnary: %s, args: %s"),comm, args);
-            }
-        }
+//        if (e->func_id == 640) {
+//            char comm[20];
+//            get_current_comm(&comm[0], 20);
+//            char cm[] = "main";
+//            if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+//                trace_printk("filter_char_buf binnary: %s, args: %s",sizeof("filter_char_buf binnary: %s, args: %s"),comm, args);
+//            }
+//        }
 //		trace_printk("filter_char_buf: paas(%ld)",sizeof("filter_char_buf: pass(%ld)"),pass);
 		break;
 	case s64_ty:

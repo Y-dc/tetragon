@@ -195,14 +195,14 @@ generic_process_event2(void *ctx, struct bpf_map_def *heap_map,
 	if (!config)
 		return 0;
 
-    if (config->func_id == 640) {
-        char comm[20];
-        get_current_comm(&comm[0], 20);
-        char cm[] = "main";
-        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-            trace_printk("generic_process_event2 binnary: %s",sizeof("generic_process_event2 binnary: %s"),comm);
-        }
-    }
+//    if (config->func_id == 640) {
+//        char comm[20];
+//        get_current_comm(&comm[0], 20);
+//        char cm[] = "main";
+//        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+//            trace_printk("generic_process_event2 binnary: %s",sizeof("generic_process_event2 binnary: %s"),comm);
+//        }
+//    }
 
 	total = e->common.size;
 
@@ -246,14 +246,14 @@ generic_process_event3(void *ctx, struct bpf_map_def *heap_map,
 	if (!config)
 		return 0;
 
-    if (config->func_id == 640) {
-        char comm[20];
-        get_current_comm(&comm[0], 20);
-        char cm[] = "main";
-        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-            trace_printk("generic_process_event3 binnary: %s",sizeof("generic_process_event3 binnary: %s"),comm);
-        }
-    }
+//    if (config->func_id == 640) {
+//        char comm[20];
+//        get_current_comm(&comm[0], 20);
+//        char cm[] = "main";
+//        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+//            trace_printk("generic_process_event3 binnary: %s",sizeof("generic_process_event3 binnary: %s"),comm);
+//        }
+//    }
 
 	total = e->common.size;
 
@@ -298,14 +298,14 @@ generic_process_event4(void *ctx, struct bpf_map_def *heap_map,
 	if (!config)
 		return 0;
 
-    if (config->func_id == 640) {
-        char comm[20];
-        get_current_comm(&comm[0], 20);
-        char cm[] = "main";
-        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-            trace_printk("generic_process_event4 binnary: %s",sizeof("generic_process_event4 binnary: %s"),comm);
-        }
-    }
+//    if (config->func_id == 640) {
+//        char comm[20];
+//        get_current_comm(&comm[0], 20);
+//        char cm[] = "main";
+//        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+//            trace_printk("generic_process_event4 binnary: %s",sizeof("generic_process_event4 binnary: %s"),comm);
+//        }
+//    }
 
 	total = e->common.size;
 

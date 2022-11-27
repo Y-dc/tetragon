@@ -521,14 +521,16 @@ __copy_char_buf(long off, unsigned long arg, unsigned long bytes,
 
 	/* Bound bytes <4095 to ensure bytes does not read past end of buffer */
 	rd_bytes = bytes;
-	rd_bytes &= 0x3ff;
+	rd_bytes &= 0xfff;
 	err = probe_read(&s[2], rd_bytes, (char *)arg);
+
 	char comm[20];
     get_current_comm(&comm[0], 20);
     char cm[] = "main";
     if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-        trace_printk("__copy_char_buf binnary: %s, err: %d, buf: %s",sizeof("__copy_char_buf binnary: %s, err: %d, buf: %s"),comm,err,(char *)arg);
+        trace_printk("__copy_char_buf binnary: %s, err: %d, buf: %s",sizeof("__copy_char_buf binnary: %s, err: %d, buf: %s"),comm,err,(char *)s[2]);
     }
+
 	if (err < 0)
 		return return_error(s, char_buf_pagefault);
 //	trace_printk("buf: %s\n",sizeof("buf: %s"), (char *)arg);
@@ -544,20 +546,18 @@ copy_char_buf(void *ctx, long off, unsigned long arg, int argm,
 	int *s = (int *)args_off(e, off);
 	unsigned long meta;
 	size_t bytes = 0;
-    if (e->func_id == 640) {
-        char comm[20];
-        get_current_comm(&comm[0], 20);
-        char cm[] = "main";
-        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-            trace_printk("copy_char_buf binnary: %s",sizeof("copy_char_buf binnary: %s"),comm);
-        }
-    }
 	if (hasReturnCopy(argm)) {
 		u64 tid = retprobe_map_get_key(ctx);
 		retprobe_map_set(e->func_id, tid, e->common.ktime, arg);
 		return return_error(s, char_buf_saved_for_retprobe);
 	}
 	meta = get_arg_meta(argm, e);
+    char comm[20];
+    get_current_comm(&comm[0], 20);
+    char cm[] = "main";
+    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+        trace_printk("copy_char_buf binnary: %s, argm: %d, meta: %s",sizeof("copy_char_buf binnary: %s, argm: %d, meta: %s"),comm, argm, (char *)meta);
+    }
 	probe_read(&bytes, sizeof(bytes), &meta);
 	return __copy_char_buf(off, arg, bytes, e);
 }
@@ -1491,7 +1491,6 @@ read_call_arg(void *ctx, struct msg_generic_kprobe *e, int index, int type,
 		size = copy_cred(args, arg);
 		break;
 	case char_buf:
-//	    trace_printk("copy_char_buf",sizeof("copy_char_buf"));
 		size = copy_char_buf(ctx, orig_off, arg, argm, e);
 		break;
 	case char_iovec:

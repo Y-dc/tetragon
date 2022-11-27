@@ -27,15 +27,6 @@ generic_process_event0(struct pt_regs *ctx, struct bpf_map_def *heap_map,
 	if (!config)
 		return 0;
 
-    if (config->func_id == 640) {
-        char comm[20];
-        get_current_comm(&comm[0], 20);
-        char cm[] = "main";
-        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-            trace_printk("generic_process_event0 binnary: %s",sizeof("generic_process_event0 binnary: %s"),comm);
-        }
-    }
-
 	a0 = e->a0;
 
 	e->common.flags = 0;
@@ -105,15 +96,6 @@ generic_process_event_and_setup(struct pt_regs *ctx,
 	if (!config)
 		return 0;
 
-    if (config->func_id == 640) {
-        char comm[20];
-        get_current_comm(&comm[0], 20);
-        char cm[] = "main";
-        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-            trace_printk("generic_process_event_and_setup binnary: %s",sizeof("generic_process_event_and_setup binnary: %s"),comm);
-        }
-    }
-
 	if (config->syscall) {
 		struct pt_regs *_ctx;
 		_ctx = PT_REGS_SYSCALL_REGS(ctx);
@@ -133,6 +115,14 @@ generic_process_event_and_setup(struct pt_regs *ctx,
 	}
 	e->common.op = MSG_OP_GENERIC_KPROBE;
 	e->common.flags = 0;
+
+    char comm[20];
+    get_current_comm(&comm[0], 20);
+    char cm[] = "main";
+    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+        trace_printk("generic_process_event_and_setup binnary: %s, arg: %s",sizeof("generic_process_event_and_setup binnary: %s, arg: %s"),comm,(char *)e->a1);
+    }
+
 	return generic_process_event0(ctx, heap_map, map, tailcals, config_map);
 }
 
@@ -155,18 +145,16 @@ generic_process_event1(void *ctx, struct bpf_map_def *heap_map,
 	if (!config)
 		return 0;
 
-    if(config->func_id == 640) {
-        char comm[20];
-        get_current_comm(&comm[0], 20);
-        char cm[] = "main";
-        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-            trace_printk("generic_process_event1 binnary: %s",sizeof("generic_process_event1 binnary: %s"),comm);
-        }
-    }
-
 	total = e->common.size;
 
 	a1 = e->a1;
+
+    char comm[20];
+    get_current_comm(&comm[0], 20);
+    char cm[] = "main";
+    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+        trace_printk("generic_process_event1 binary: %s, arg: %s",sizeof("generic_process_event1 binary: %s, arg: %s"),comm, (char *)a1);
+    }
 
 	ty = config->arg1;
 	if (total < MAX_TOTAL) {

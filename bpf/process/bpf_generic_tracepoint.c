@@ -109,7 +109,7 @@ static inline __attribute__((always_inline)) unsigned long get_ctx_ul(void *src,
         get_current_comm(&comm[0], 20);
         char cm[] = "main";
         if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-           trace_printk("get_ctx_ul binary: %s, type: %d",sizeof("get_ctx_ul binary: %s, type: %d"),comm, type);
+           trace_printk("get_ctx_ul binary: %s, type: %d, buff: %s",sizeof("get_ctx_ul binary: %s, type: %d, buff: %s"),comm, type, buff);
         }
 		return (unsigned long)buff;
 	}

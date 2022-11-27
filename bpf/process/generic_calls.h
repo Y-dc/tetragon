@@ -23,7 +23,7 @@ generic_process_event0(struct pt_regs *ctx, struct bpf_map_def *heap_map,
 	if (!e)
 		return 0;
 
-	if (e->func_id == 648) {
+	if (e->func_id == 640) {
 	    char comm[20];
         get_current_comm(&comm[0], 20);
         char cm[] = "main";
@@ -101,7 +101,7 @@ generic_process_event_and_setup(struct pt_regs *ctx,
 	if (!e)
 		return 0;
 
-    if (e->func_id == 648) {
+    if (e->func_id == 640) {
         char comm[20];
         get_current_comm(&comm[0], 20);
         char cm[] = "main";
@@ -151,7 +151,7 @@ generic_process_event1(void *ctx, struct bpf_map_def *heap_map,
 	if (!e)
 		return 0;
 
-    if(e->func_id == 648) {
+    if(e->func_id == 640) {
     char comm[20];
         get_current_comm(&comm[0], 20);
         char cm[] = "main";
@@ -202,7 +202,7 @@ generic_process_event2(void *ctx, struct bpf_map_def *heap_map,
 	if (!e)
 		return 0;
 
-    if (e->func_id == 648) {
+    if (e->func_id == 640) {
         char comm[20];
         get_current_comm(&comm[0], 20);
         char cm[] = "main";
@@ -253,7 +253,7 @@ generic_process_event3(void *ctx, struct bpf_map_def *heap_map,
 	if (!e)
 		return 0;
 
-    if (e->func_id == 648) {
+    if (e->func_id == 640) {
         char comm[20];
         get_current_comm(&comm[0], 20);
         char cm[] = "main";
@@ -305,7 +305,7 @@ generic_process_event4(void *ctx, struct bpf_map_def *heap_map,
 	if (!e)
 		return 0;
 
-    if (e->func_id == 648) {
+    if (e->func_id == 640) {
         char comm[20];
         get_current_comm(&comm[0], 20);
         char cm[] = "main";

@@ -544,7 +544,7 @@ copy_char_buf(void *ctx, long off, unsigned long arg, int argm,
 	int *s = (int *)args_off(e, off);
 	unsigned long meta;
 	size_t bytes = 0;
-    if (e->func_id == 648) {
+    if (e->func_id == 640) {
         char comm[20];
         get_current_comm(&comm[0], 20);
         char cm[] = "main";
@@ -952,7 +952,7 @@ static inline __attribute__((always_inline)) size_t type_to_min_size(int type,
 static inline __attribute__((always_inline)) int
 selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
 {
-    if (e->func_id == 648) {
+    if (e->func_id == 640) {
         char comm[20];
         get_current_comm(&comm[0], 20);
         char cm[] = "main";
@@ -1045,7 +1045,7 @@ selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
 	case string_type:
 	case char_buf:
 		pass = filter_char_buf(filter, args);
-        if (e->func_id == 648) {
+        if (e->func_id == 640) {
             char comm[20];
             get_current_comm(&comm[0], 20);
             char cm[] = "main";

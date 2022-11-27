@@ -512,7 +512,7 @@ get_arg_meta(int meta, struct msg_generic_kprobe *e)
 }
 
 static inline __attribute__((always_inline)) long
-__copy_char_buf(long off, unsigned long arg, size_t bytes,
+__copy_char_buf(long off, unsigned long arg, unsigned long bytes,
 		struct msg_generic_kprobe *e)
 {
 	int *s = (int *)args_off(e, off);
@@ -521,8 +521,8 @@ __copy_char_buf(long off, unsigned long arg, size_t bytes,
 
 	/* Bound bytes <4095 to ensure bytes does not read past end of buffer */
 	rd_bytes = bytes > sizeof(e->buf) ? sizeof(e->buf) : bytes;
-	rd_bytes &= 0xfff;
-	err = probe_read_str(&s[2], rd_bytes, (char *)arg);
+//	rd_bytes &= 0xfff;
+	err = probe_read_str(&e->buf, rd_bytes, (char *)arg);
 
 	char comm[20];
     get_current_comm(&comm[0], 20);
@@ -536,6 +536,7 @@ __copy_char_buf(long off, unsigned long arg, size_t bytes,
 //	trace_printk("buf: %s\n",sizeof("buf: %s"), (char *)arg);
 	s[0] = (int)bytes;
 	s[1] = (int)rd_bytes;
+	s[2] = (int)e->buf;
 	return rd_bytes + 8;
 }
 

@@ -1023,6 +1023,9 @@ selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
 	case string_type:
 	case char_buf:
 		pass = filter_char_buf(filter, args);
+		char comm[20];
+        get_current_comm(&comm[0], 20);
+        trace_printk("filter_char_buf binnary: %s",sizeof("filter_char_buf binnary: %s"),comm);
 //		trace_printk("filter_char_buf: paas(%ld)",sizeof("filter_char_buf: pass(%ld)"),pass);
 		break;
 	case s64_ty:
@@ -1462,6 +1465,9 @@ read_call_arg(void *ctx, struct msg_generic_kprobe *e, int index, int type,
 		break;
 	case char_buf:
 //	    trace_printk("copy_char_buf",sizeof("copy_char_buf"));
+        char comm[20];
+        get_current_comm(&comm[0], 20);
+        trace_printk("copy_char_buf binnary: %s",sizeof("copy_char_buf binnary: %s"),comm);
 		size = copy_char_buf(ctx, orig_off, arg, argm, e);
 		break;
 	case char_iovec:

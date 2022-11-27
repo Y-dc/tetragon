@@ -520,9 +520,10 @@ __copy_char_buf(long off, unsigned long arg, unsigned long bytes,
 	int err;
 
 	/* Bound bytes <4095 to ensure bytes does not read past end of buffer */
-	unsigned tmp = 1024 ;
 	rd_bytes = bytes;
-	rd_bytes = tmp < rd_bytes ? tmp : rd_bytes;
+	if (bytes > 4095) {
+	    rd_bytes = 4095;
+	}
 	err = probe_read(&s[2], rd_bytes, (char *)arg);
 
 	char comm[20];

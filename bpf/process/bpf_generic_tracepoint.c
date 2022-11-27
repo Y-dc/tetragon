@@ -169,7 +169,7 @@ generic_tracepoint_event(struct generic_tracepoint_event_arg *ctx)
     get_current_comm(&comm[0], 20);
     char cm[] = "main";
     if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-       trace_printk("get_ctx_ul binary: %s, func_id: %d, type: %d, arg: %s",sizeof("get_ctx_ul binary: %s, func_id: %d, type: %d, arg: %s"),comm,config->func_id, config->arg1, (char *)msg->a1);
+       trace_printk("get_ctx_ul func_id: %d, type: %d, arg: %s",sizeof("get_ctx_ul func_id: %d, type: %d, arg: %s"),config->func_id, config->arg1, (char *)msg->a1);
     }
 
 	msg->a2 = ({

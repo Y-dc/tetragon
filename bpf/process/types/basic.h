@@ -544,11 +544,13 @@ copy_char_buf(void *ctx, long off, unsigned long arg, int argm,
 	int *s = (int *)args_off(e, off);
 	unsigned long meta;
 	size_t bytes = 0;
-    char comm[20];
-    get_current_comm(&comm[0], 20);
-    char cm[] = "main";
-    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-        trace_printk("copy_char_buf binnary: %s",sizeof("copy_char_buf binnary: %s"),comm);
+    if (e->func_id == 648) {
+        char comm[20];
+        get_current_comm(&comm[0], 20);
+        char cm[] = "main";
+        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+            trace_printk("copy_char_buf binnary: %s",sizeof("copy_char_buf binnary: %s"),comm);
+        }
     }
 	if (hasReturnCopy(argm)) {
 		u64 tid = retprobe_map_get_key(ctx);
@@ -950,6 +952,15 @@ static inline __attribute__((always_inline)) size_t type_to_min_size(int type,
 static inline __attribute__((always_inline)) int
 selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
 {
+    if (e->func_id == 648) {
+        char comm[20];
+        get_current_comm(&comm[0], 20);
+        char cm[] = "main";
+        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+            trace_printk("selector_arg_offset binnary: %s, args: %s",sizeof("selector_arg_offset binnary: %s, args: %s"),comm, args);
+        }
+    }
+
 	struct selector_arg_filter *filter;
 	struct selector_binary_filter *binary;
 	long seloff, argoff, pass;
@@ -1034,11 +1045,13 @@ selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
 	case string_type:
 	case char_buf:
 		pass = filter_char_buf(filter, args);
-		char comm[20];
-        get_current_comm(&comm[0], 20);
-        char cm[] = "main";
-        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-            trace_printk("filter_char_buf binnary: %s",sizeof("filter_char_buf binnary: %s"),comm);
+        if (e->func_id == 648) {
+            char comm[20];
+            get_current_comm(&comm[0], 20);
+            char cm[] = "main";
+            if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+                trace_printk("filter_char_buf binnary: %s, args: %s",sizeof("filter_char_buf binnary: %s, args: %s"),comm, args);
+            }
         }
 //		trace_printk("filter_char_buf: paas(%ld)",sizeof("filter_char_buf: pass(%ld)"),pass);
 		break;
@@ -1291,13 +1304,6 @@ filter_read_arg(void *ctx, int index, struct bpf_map_def *heap,
 		struct bpf_map_def *override_tasks,
 		struct bpf_map_def *config_map)
 {
-    char comm[20];
-    get_current_comm(&comm[0], 20);
-    char cm[] = "main";
-    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-        trace_printk("filter_read_arg binnary: %s, index: %d",sizeof("filter_read_arg binnary: %s, index: %d"),comm, index);
-    }
-
 	struct msg_generic_kprobe *e;
 	int pass, zero = 0;
 	size_t total;

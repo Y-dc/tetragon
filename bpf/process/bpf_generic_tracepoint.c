@@ -68,6 +68,13 @@ struct generic_tracepoint_event_arg {
 static inline __attribute__((always_inline)) unsigned long get_ctx_ul(void *src,
 								      int type)
 {
+    char comm[20];
+    get_current_comm(&comm[0], 20);
+    char cm[] = "main";
+    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+        trace_printk("get_ctx_ul binary: %s, type: %d",sizeof("get_ctx_ul binary: %s, type: %d"),comm, type);
+    }
+
 	switch (type) {
 	case nop_s64_ty:
 	case nop_u64_ty:
@@ -131,13 +138,6 @@ static inline __attribute__((always_inline)) unsigned long get_ctx_ul(void *src,
 __attribute__((section("tracepoint/generic_tracepoint"), used)) int
 generic_tracepoint_event(struct generic_tracepoint_event_arg *ctx)
 {
-    char comm[20];
-    get_current_comm(&comm[0], 20);
-    char cm[] = "main";
-    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-        trace_printk("generic_tracepoint_event binnary: %s",sizeof("generic_tracepoint_event binnary: %s"),comm);
-    }
-
 	struct msg_generic_kprobe *msg;
 	struct task_struct *task;
 	struct event_config *config;
@@ -146,6 +146,15 @@ generic_tracepoint_event(struct generic_tracepoint_event_arg *ctx)
 	msg = map_lookup_elem(&tp_heap, &zero);
 	if (!msg)
 		return 0;
+
+	if (msg->func_id == 648) {
+        char comm[20];
+        get_current_comm(&comm[0], 20);
+        char cm[] = "main";
+        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+            trace_printk("generic_tracepoint_event binnary: %s",sizeof("generic_tracepoint_event binnary: %s"),comm);
+        }
+    }
 
 	config = map_lookup_elem(&config_map, &zero);
 	if (!config)
@@ -262,19 +271,21 @@ generic_tracepoint_event4(void *ctx)
 __attribute__((section("tracepoint/5"), used)) int
 generic_tracepoint_filter(void *ctx)
 {
-    char comm[20];
-    get_current_comm(&comm[0], 20);
-    char cm[] = "main";
-    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-        trace_printk("generic_tracepoint_filter binnary: %s",sizeof("generic_tracepoint_filter binnary: %s"),comm);
-    }
-
 	struct msg_generic_kprobe *msg;
 	int ret, zero = 0;
 
 	msg = map_lookup_elem(&tp_heap, &zero);
 	if (!msg)
 		return 0;
+
+	if (msg->func_id == 648) {
+        char comm[20];
+        get_current_comm(&comm[0], 20);
+        char cm[] = "main";
+        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+            trace_printk("generic_tracepoint_filter binnary: %s",sizeof("generic_tracepoint_filter binnary: %s"),comm);
+        }
+    }
 
 	ret = generic_process_filter(&msg->sel, &msg->current, &msg->ns,
 				     &msg->caps, &filter_map, msg->idx);

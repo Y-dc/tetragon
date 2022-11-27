@@ -9,13 +9,6 @@ generic_process_event0(struct pt_regs *ctx, struct bpf_map_def *heap_map,
 		       struct bpf_map_def *map, struct bpf_map_def *tailcals,
 		       struct bpf_map_def *config_map)
 {
-    char comm[20];
-    get_current_comm(&comm[0], 20);
-    char cm[] = "main";
-    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-        trace_printk("generic_process_event0 binnary: %s",sizeof("generic_process_event0 binnary: %s"),comm);
-    }
-
 	struct msg_generic_kprobe *e;
 	struct event_config *config;
 	unsigned long a0;
@@ -29,6 +22,15 @@ generic_process_event0(struct pt_regs *ctx, struct bpf_map_def *heap_map,
 	e = map_lookup_elem(heap_map, &zero);
 	if (!e)
 		return 0;
+
+	if (e->func_id == 648)
+	    char comm[20];
+        get_current_comm(&comm[0], 20);
+        char cm[] = "main";
+        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+            trace_printk("generic_process_event0 binnary: %s",sizeof("generic_process_event0 binnary: %s"),comm);
+        }
+    }
 
 	config = map_lookup_elem(config_map, &e->idx);
 	if (!config)
@@ -90,13 +92,6 @@ generic_process_event_and_setup(struct pt_regs *ctx,
 				struct bpf_map_def *tailcals,
 				struct bpf_map_def *config_map)
 {
-    char comm[20];
-    get_current_comm(&comm[0], 20);
-    char cm[] = "main";
-    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-        trace_printk("generic_process_event_and_setup binnary: %s",sizeof("generic_process_event_and_setup binnary: %s"),comm);
-    }
-
 	struct msg_generic_kprobe *e;
 	struct event_config *config;
 	int zero = 0;
@@ -105,6 +100,15 @@ generic_process_event_and_setup(struct pt_regs *ctx,
 	e = map_lookup_elem(heap_map, &zero);
 	if (!e)
 		return 0;
+
+    if (e->func_id == 648) {
+        char comm[20];
+        get_current_comm(&comm[0], 20);
+        char cm[] = "main";
+        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+            trace_printk("generic_process_event_and_setup binnary: %s",sizeof("generic_process_event_and_setup binnary: %s"),comm);
+        }
+    }
 
 	config = map_lookup_elem(config_map, &e->idx);
 	if (!config)
@@ -137,13 +141,6 @@ generic_process_event1(void *ctx, struct bpf_map_def *heap_map,
 		       struct bpf_map_def *map, struct bpf_map_def *tailcals,
 		       struct bpf_map_def *config_map)
 {
-    char comm[20];
-    get_current_comm(&comm[0], 20);
-    char cm[] = "main";
-    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-        trace_printk("generic_process_event1 binnary: %s",sizeof("generic_process_event1 binnary: %s"),comm);
-    }
-
 	struct msg_generic_kprobe *e;
 	struct event_config *config;
 	unsigned long a1;
@@ -153,6 +150,15 @@ generic_process_event1(void *ctx, struct bpf_map_def *heap_map,
 	e = map_lookup_elem(heap_map, &zero);
 	if (!e)
 		return 0;
+
+    if(e->func_id == 648) {
+    char comm[20];
+        get_current_comm(&comm[0], 20);
+        char cm[] = "main";
+        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+            trace_printk("generic_process_event1 binnary: %s",sizeof("generic_process_event1 binnary: %s"),comm);
+        }
+    }
 
 	config = map_lookup_elem(config_map, &e->idx);
 	if (!config)
@@ -186,13 +192,6 @@ generic_process_event2(void *ctx, struct bpf_map_def *heap_map,
 		       struct bpf_map_def *map, struct bpf_map_def *tailcals,
 		       struct bpf_map_def *config_map)
 {
-    char comm[20];
-    get_current_comm(&comm[0], 20);
-    char cm[] = "main";
-    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-        trace_printk("generic_process_event2 binnary: %s",sizeof("generic_process_event2 binnary: %s"),comm);
-    }
-
 	struct msg_generic_kprobe *e;
 	struct event_config *config;
 	unsigned long a2;
@@ -202,6 +201,15 @@ generic_process_event2(void *ctx, struct bpf_map_def *heap_map,
 	e = map_lookup_elem(heap_map, &zero);
 	if (!e)
 		return 0;
+
+    if (e->func_id == 648) {
+        char comm[20];
+        get_current_comm(&comm[0], 20);
+        char cm[] = "main";
+        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+            trace_printk("generic_process_event2 binnary: %s",sizeof("generic_process_event2 binnary: %s"),comm);
+        }
+    }
 
 	config = map_lookup_elem(config_map, &e->idx);
 	if (!config)
@@ -235,13 +243,6 @@ generic_process_event3(void *ctx, struct bpf_map_def *heap_map,
 		       struct bpf_map_def *map, struct bpf_map_def *tailcals,
 		       struct bpf_map_def *config_map)
 {
-    char comm[20];
-    get_current_comm(&comm[0], 20);
-    char cm[] = "main";
-    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-        trace_printk("generic_process_event3 binnary: %s",sizeof("generic_process_event3 binnary: %s"),comm);
-    }
-
 	struct msg_generic_kprobe *e;
 	struct event_config *config;
 	unsigned long a3;
@@ -251,6 +252,15 @@ generic_process_event3(void *ctx, struct bpf_map_def *heap_map,
 	e = map_lookup_elem(heap_map, &zero);
 	if (!e)
 		return 0;
+
+    if (e->func_id == 648) {
+        char comm[20];
+        get_current_comm(&comm[0], 20);
+        char cm[] = "main";
+        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+            trace_printk("generic_process_event3 binnary: %s",sizeof("generic_process_event3 binnary: %s"),comm);
+        }
+    }
 
 	config = map_lookup_elem(config_map, &e->idx);
 	if (!config)
@@ -285,13 +295,6 @@ generic_process_event4(void *ctx, struct bpf_map_def *heap_map,
 		       struct bpf_map_def *map, struct bpf_map_def *tailcals,
 		       struct bpf_map_def *config_map)
 {
-    char comm[20];
-    get_current_comm(&comm[0], 20);
-    char cm[] = "main";
-    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-        trace_printk("generic_process_event4 binnary: %s",sizeof("generic_process_event4 binnary: %s"),comm);
-    }
-
 	struct msg_generic_kprobe *e;
 	struct event_config *config;
 	unsigned long a4;
@@ -301,6 +304,15 @@ generic_process_event4(void *ctx, struct bpf_map_def *heap_map,
 	e = map_lookup_elem(heap_map, &zero);
 	if (!e)
 		return 0;
+
+    if (e->func_id == 648) {
+        char comm[20];
+        get_current_comm(&comm[0], 20);
+        char cm[] = "main";
+        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+            trace_printk("generic_process_event4 binnary: %s",sizeof("generic_process_event4 binnary: %s"),comm);
+        }
+    }
 
 	config = map_lookup_elem(config_map, &e->idx);
 	if (!config)

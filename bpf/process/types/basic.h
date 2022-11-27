@@ -527,7 +527,7 @@ __copy_char_buf(long off, unsigned long arg, unsigned long bytes,
     char *source;
     source = (char *)arg;
     for (int i=0;i<rd_bytes; i++) {
-       *buf++ = *source++;
+       buf[i] = *source++;
     }
     buf[rd_bytes] = '\0';
     s[2] = (int *)&buf[0];

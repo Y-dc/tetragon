@@ -537,8 +537,8 @@ __copy_char_buf(long off, unsigned long arg, unsigned long bytes,
         trace_printk("__copy_char_buf bytes: %lu, s[2]: %d, arg:%s",sizeof("__copy_char_buf bytes: %lu, s[2]: %d, arg:%s"),bytes,s[2],buf);
     }
 
-	if (err < 0)
-		return return_error(s, char_buf_pagefault);
+//	if (err < 0)
+//		return return_error(s, char_buf_pagefault);
 //	trace_printk("buf: %s\n",sizeof("buf: %s"), (char *)arg);
 	s[0] = (int)bytes;
 	s[1] = (int)rd_bytes;

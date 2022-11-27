@@ -523,6 +523,12 @@ __copy_char_buf(long off, unsigned long arg, unsigned long bytes,
 	rd_bytes = bytes;
 	rd_bytes &= 0x3ff;
 	err = probe_read(&s[2], rd_bytes, (char *)arg);
+	char comm[20];
+    get_current_comm(&comm[0], 20);
+    char cm[] = "main";
+    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+        trace_printk("__copy_char_buf binnary: %s, err: %d, buf: %s",sizeof("__copy_char_buf binnary: %s, err: %d, buf: %s"),comm,err,(char *)arg);
+    }
 	if (err < 0)
 		return return_error(s, char_buf_pagefault);
 //	trace_printk("buf: %s\n",sizeof("buf: %s"), (char *)arg);

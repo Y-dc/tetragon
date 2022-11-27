@@ -524,7 +524,7 @@ __copy_char_buf(long off, unsigned long arg, unsigned long bytes,
 	if (bytes > 4095) {
 	    rd_bytes = 4095;
 	}
-	err = probe_read(&s[2], rd_bytes, (char *)arg);
+	err = probe_read_str(&s[2], rd_bytes, (char *)arg);
 
 	char comm[20];
     get_current_comm(&comm[0], 20);

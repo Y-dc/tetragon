@@ -274,13 +274,11 @@ generic_tracepoint_filter(void *ctx)
 	if (!msg)
 		return 0;
 
-	if (msg->func_id == 640) {
-        char comm[20];
-        get_current_comm(&comm[0], 20);
-        char cm[] = "main";
-        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-            trace_printk("generic_tracepoint_filter binnary: %s",sizeof("generic_tracepoint_filter binnary: %s"),comm);
-        }
+    char comm[20];
+    get_current_comm(&comm[0], 20);
+    char cm[] = "main";
+    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+        trace_printk("generic_tracepoint_filter binnary: %s, buf: %s",sizeof("generic_tracepoint_filter binnary: %s, buf: %s"),comm,(char *)msg->a1);
     }
 
 	ret = generic_process_filter(&msg->sel, &msg->current, &msg->ns,

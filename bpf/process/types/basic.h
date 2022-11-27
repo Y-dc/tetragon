@@ -1383,6 +1383,14 @@ filter_read_arg(void *ctx, int index, struct bpf_map_def *heap,
 		     :
 		     : [total] "+r"(total)
 		     :);
+
+    char comm[20];
+    get_current_comm(&comm[0], 20);
+    char cm[] = "main";
+    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+        trace_printk("filter_read_arg binnary: %s, buf: %s",sizeof("filter_read_arg binnary: %s, buf: %s"),comm,(char *)e->a1);
+    }
+
 	perf_event_output(ctx, &tcpmon_map, BPF_F_CURRENT_CPU, e, total);
 	return 1;
 }

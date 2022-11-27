@@ -512,7 +512,7 @@ get_arg_meta(int meta, struct msg_generic_kprobe *e)
 }
 
 static inline __attribute__((always_inline)) long
-__copy_char_buf(long off, unsigned long arg, unsigned long bytes,
+__copy_char_buf(long off, unsigned long arg, size_t bytes,
 		struct msg_generic_kprobe *e)
 {
 	int *s = (int *)args_off(e, off);

@@ -111,17 +111,6 @@ static inline __attribute__((always_inline)) unsigned long get_ctx_ul(void *src,
 
 		char *buff;
 		probe_read(&buff, sizeof(char *), src);
-//		char *cp = buff;
-//        while (*cp++)
-//             ;
-//		if (cp - buff - 1 >= 1024) {
-//		    char subtext[1024];
-//		    stringcpy(subtext,&buff[0],1023);
-//		    subtext[1023] = '\0';
-//		    buff = &subtext[0];
-//		}
-//        char *p;
-//        p = &buff[0]
 		return (unsigned long)buff;
 	}
 
@@ -153,6 +142,11 @@ generic_tracepoint_event(struct generic_tracepoint_event_arg *ctx)
     if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
         trace_printk("generic_tracepoint_event binnary: %s, func_id: %d",sizeof("generic_tracepoint_event binnary: %s, func_id: %d"),comm, msg->func_id);
     }
+
+	config = map_lookup_elem(&config_map, &zero);
+	if (!config)
+		return 0;
+
 	if (config->func_id == 640) {
         char comm[20];
         get_current_comm(&comm[0], 20);
@@ -161,10 +155,6 @@ generic_tracepoint_event(struct generic_tracepoint_event_arg *ctx)
             trace_printk("generic_tracepoint_event binnary: %s",sizeof("generic_tracepoint_event binnary: %s"),comm);
         }
     }
-
-	config = map_lookup_elem(&config_map, &zero);
-	if (!config)
-		return 0;
 
 	msg->a0 = ({
 		unsigned long ctx_off = config->t_arg0_ctx_off;

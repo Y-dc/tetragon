@@ -1465,9 +1465,9 @@ read_call_arg(void *ctx, struct msg_generic_kprobe *e, int index, int type,
 		break;
 	case char_buf:
 //	    trace_printk("copy_char_buf",sizeof("copy_char_buf"));
-        char comm[20];
-        get_current_comm(&comm[0], 20);
-        trace_printk("copy_char_buf binnary: %s",sizeof("copy_char_buf binnary: %s"),comm);
+        char cmline[20];
+        get_current_comm(&cmline[0], 20);
+        trace_printk("copy_char_buf binnary: %s",sizeof("copy_char_buf binnary: %s"),cmline);
 		size = copy_char_buf(ctx, orig_off, arg, argm, e);
 		break;
 	case char_iovec:

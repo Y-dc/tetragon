@@ -102,15 +102,15 @@ static inline __attribute__((always_inline)) unsigned long get_ctx_ul(void *src,
 	case char_buf: {
 //	    trace_printk("get_ctx_ul char_buf",sizeof("get_ctx_ul char_buf"));
 
-        char comm[20];
+		char *buff;
+		probe_read(&buff, sizeof(char *), src);
+
+		char comm[20];
         get_current_comm(&comm[0], 20);
         char cm[] = "main";
         if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
            trace_printk("get_ctx_ul binary: %s, type: %d",sizeof("get_ctx_ul binary: %s, type: %d"),comm, type);
         }
-
-		char *buff;
-		probe_read(&buff, sizeof(char *), src);
 		return (unsigned long)buff;
 	}
 
@@ -171,6 +171,13 @@ generic_tracepoint_event(struct generic_tracepoint_event_arg *ctx)
 			     :);
 		get_ctx_ul((char *)ctx + ctx_off, ty);
 	});
+
+    char comm[20];
+    get_current_comm(&comm[0], 20);
+    char cm[] = "main";
+    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+       trace_printk("get_ctx_ul binary: %s, func_id: %d, type: %d, arg: %s",sizeof("get_ctx_ul binary: %s, func_id: %d, type: %d, arg: %s"),comm,config->func_id, config->arg1, (char *)msg->a1);
+    }
 
 	msg->a2 = ({
 		unsigned long ctx_off = config->t_arg2_ctx_off;

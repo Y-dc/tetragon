@@ -113,7 +113,7 @@ static inline __attribute__((always_inline)) unsigned long get_ctx_ul(void *src,
 //        char *p;
 //        p = &buff[0]
         char comm[20];
-        get_current_comm(&comm, 20);
+        get_current_comm(&comm[0], 20);
         trace_printk("binnary: %s,get ctx ul char buf: %s",sizeof("binnary: %s,get ctx ul char buf: %s"),comm,buff);
 		return (unsigned long)buff;
 	}

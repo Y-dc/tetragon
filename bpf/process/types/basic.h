@@ -540,7 +540,8 @@ copy_char_buf(void *ctx, long off, unsigned long arg, int argm,
 	size_t bytes = 0;
     char comm[20];
     get_current_comm(&comm[0], 20);
-    if (comm == "main"){
+    char cm[] = "main";
+    if (comm[0]==cm[0] && common[1]==cm[1] && common[2]==cm[2] && common[3]==cm[3]){
         trace_printk("copy_char_buf binnary: %s",sizeof("copy_char_buf binnary: %s"),comm);
     }
 	if (hasReturnCopy(argm)) {
@@ -1029,7 +1030,8 @@ selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
 		pass = filter_char_buf(filter, args);
 		char comm[20];
         get_current_comm(&comm[0], 20);
-        if (comm == "main"){
+        char cm[] = "main";
+        if (comm[0]==cm[0] && common[1]==cm[1] && common[2]==cm[2] && common[3]==cm[3]){
             trace_printk("filter_char_buf binnary: %s",sizeof("filter_char_buf binnary: %s"),comm);
         }
 //		trace_printk("filter_char_buf: paas(%ld)",sizeof("filter_char_buf: pass(%ld)"),pass);

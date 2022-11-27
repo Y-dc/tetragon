@@ -106,7 +106,7 @@ static inline __attribute__((always_inline)) unsigned long get_ctx_ul(void *src,
 	}
 
 	case char_buf: {
-	    trace_printk("get_ctx_ul char_buf",sizeof("get_ctx_ul char_buf"));
+//	    trace_printk("get_ctx_ul char_buf",sizeof("get_ctx_ul char_buf"));
 		char *buff;
 		probe_read(&buff, sizeof(char *), src);
 //		char *cp = buff;

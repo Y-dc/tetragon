@@ -517,7 +517,7 @@ __copy_char_buf(long off, unsigned long arg, unsigned long bytes,
 {
 	int *s = (int *)args_off(e, off);
 	size_t rd_bytes;
-	int err;
+//	int err;
 
 	/* Bound bytes <4095 to ensure bytes does not read past end of buffer */
 	rd_bytes = bytes > 1024 ? 1024 : bytes;

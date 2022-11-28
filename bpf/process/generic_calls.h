@@ -116,12 +116,12 @@ generic_process_event_and_setup(struct pt_regs *ctx,
 	e->common.op = MSG_OP_GENERIC_KPROBE;
 	e->common.flags = 0;
 
-    char comm[20];
-    get_current_comm(&comm[0], 20);
-    char cm[] = "main";
-    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-        trace_printk("generic_process_event_and_setup binnary: %s, arg: %s",sizeof("generic_process_event_and_setup binnary: %s, arg: %s"),comm,(char *)e->a1);
-    }
+//    char comm[20];
+//    get_current_comm(&comm[0], 20);
+//    char cm[] = "main";
+//    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+//        trace_printk("generic_process_event_and_setup binnary: %s, arg: %s",sizeof("generic_process_event_and_setup binnary: %s, arg: %s"),comm,(char *)e->a1);
+//    }
 
 	return generic_process_event0(ctx, heap_map, map, tailcals, config_map);
 }
@@ -148,7 +148,7 @@ generic_process_event1(void *ctx, struct bpf_map_def *heap_map,
 	total = e->common.size;
 
 	a1 = e->a1;
-	e->a2 = e->a2 > 1024 ? 1024 : e->a2;
+//	e->a2 = e->a2 > 0x3ff ? 0x3ff : e->a2;
 
 	ty = config->arg1;
 	if (total < MAX_TOTAL) {

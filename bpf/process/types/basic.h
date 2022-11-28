@@ -141,6 +141,8 @@ struct event_config {
  */
 #define MAX_STRING 1024
 
+#define MAX_BUF_SIZE 0x3ff
+
 #ifdef __MULTI_KPROBE
 static inline __attribute__((always_inline)) void
 setup_index(void *ctx, struct msg_generic_kprobe *msg,
@@ -559,6 +561,7 @@ copy_char_buf(void *ctx, long off, unsigned long arg, int argm,
 //        trace_printk("copy_char_buf binnary: %s, argm: %d, meta: %s",sizeof("copy_char_buf binnary: %s, argm: %d, meta: %s"),comm, argm, (char *)meta);
 //    }
 	probe_read(&bytes, sizeof(bytes), &meta);
+	bytes =  bytes > MAX_BUF_SIZE ? MAX_BUF_SIZE : bytes;
 	return __copy_char_buf(off, arg, bytes, e);
 }
 

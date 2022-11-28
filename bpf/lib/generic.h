@@ -44,7 +44,9 @@ struct msg_generic_kprobe {
 	struct msg_selector_data sel;
 	int idx;
 	int func_id;
-	char buf[1024];
+
+	// char_buf char_iovec meta size cut
+//	unsigned amc;
 };
 
 static inline __attribute__((always_inline)) size_t generic_kprobe_common_size()

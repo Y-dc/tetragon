@@ -54,21 +54,9 @@ struct generic_tracepoint_event_arg {
 	/* tracepoint specific fields ... */
 };
 
-//static char * stringcpy (char * dest,const char * source,int count)
-//{
-//    char *start = dest;
-//    while (count && (*dest++ =*source++)) /* copy string */
-//    count--;
-//    if (count) /* pad out with zeroes */
-//    while (--count)
-//    *dest++ = '\0';
-//    return(start);
-//}
-
 static inline __attribute__((always_inline)) unsigned long get_ctx_ul(void *src,
 								      int type)
 {
-
 	switch (type) {
 	case nop_s64_ty:
 	case nop_u64_ty:
@@ -100,17 +88,15 @@ static inline __attribute__((always_inline)) unsigned long get_ctx_ul(void *src,
 	}
 
 	case char_buf: {
-//	    trace_printk("get_ctx_ul char_buf",sizeof("get_ctx_ul char_buf"));
-
 		char *buff;
 		probe_read(&buff, sizeof(char *), src);
 
-		char comm[20];
-        get_current_comm(&comm[0], 20);
-        char cm[] = "main";
-        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-           trace_printk("get_ctx_ul binary: %s, type: %d, buff: %s",sizeof("get_ctx_ul binary: %s, type: %d, buff: %s"),comm, type, buff);
-        }
+//		char comm[20];
+//        get_current_comm(&comm[0], 20);
+//        char cm[] = "main";
+//        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+//           trace_printk("get_ctx_ul binary: %s, type: %d, buff: %s",sizeof("get_ctx_ul binary: %s, type: %d, buff: %s"),comm, type, buff);
+//        }
 		return (unsigned long)buff;
 	}
 
@@ -140,15 +126,6 @@ generic_tracepoint_event(struct generic_tracepoint_event_arg *ctx)
 	if (!config)
 		return 0;
 
-//	if (config->func_id == 640) {
-//        char comm[20];
-//        get_current_comm(&comm[0], 20);
-//        char cm[] = "main";
-//        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-//            trace_printk("generic_tracepoint_event binnary: %s",sizeof("generic_tracepoint_event binnary: %s"),comm);
-//        }
-//    }
-
 	msg->a0 = ({
 		unsigned long ctx_off = config->t_arg0_ctx_off;
 		int ty = config->arg0;
@@ -165,12 +142,12 @@ generic_tracepoint_event(struct generic_tracepoint_event_arg *ctx)
 		get_ctx_ul((char *)ctx + ctx_off, ty);
 	});
 
-    char comm[20];
-    get_current_comm(&comm[0], 20);
-    char cm[] = "main";
-    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-       trace_printk("get_ctx_ul func_id: %d, type: %d, arg: %s",sizeof("get_ctx_ul func_id: %d, type: %d, arg: %s"),config->func_id, config->arg1, (char *)msg->a1);
-    }
+//    char comm[20];
+//    get_current_comm(&comm[0], 20);
+//    char cm[] = "main";
+//    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+//       trace_printk("get_ctx_ul func_id: %d, type: %d, arg: %s",sizeof("get_ctx_ul func_id: %d, type: %d, arg: %s"),config->func_id, config->arg1, (char *)msg->a1);
+//    }
 
 	msg->a2 = ({
 		unsigned long ctx_off = config->t_arg2_ctx_off;
@@ -274,12 +251,12 @@ generic_tracepoint_filter(void *ctx)
 	if (!msg)
 		return 0;
 
-    char comm[20];
-    get_current_comm(&comm[0], 20);
-    char cm[] = "main";
-    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-        trace_printk("generic_tracepoint_filter binnary: %s, buf: %s",sizeof("generic_tracepoint_filter binnary: %s, buf: %s"),comm,(char *)msg->a1);
-    }
+//    char comm[20];
+//    get_current_comm(&comm[0], 20);
+//    char cm[] = "main";
+//    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+//        trace_printk("generic_tracepoint_filter binnary: %s, buf: %s",sizeof("generic_tracepoint_filter binnary: %s, buf: %s"),comm,(char *)msg->a1);
+//    }
 
 	ret = generic_process_filter(&msg->sel, &msg->current, &msg->ns,
 				     &msg->caps, &filter_map, msg->idx);

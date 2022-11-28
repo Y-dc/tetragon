@@ -141,7 +141,7 @@ struct event_config {
  */
 #define MAX_STRING 1024
 
-#define MAX_BUF_SIZE 0x3ff
+#define MAX_BUF_SIZE 1024
 
 #ifdef __MULTI_KPROBE
 static inline __attribute__((always_inline)) void
@@ -522,15 +522,20 @@ __copy_char_buf(long off, unsigned long arg, size_t bytes,
 	int err;
 
 	/* Bound bytes <4095 to ensure bytes does not read past end of buffer */
-	rd_bytes = bytes;
-	rd_bytes &= 0xfff;
+//	char buf[MAX_BUF_SIZE] = {0};
+	rd_bytes = bytes < MAX_BUF_SIZE-1 ? bytes : MAX_BUF_SIZE-2;
+//	rd_bytes &= 0xfff;
 	err = probe_read_str(&s[2], rd_bytes, (char *)arg);
+
+//	for (int i=0;i<128;i++) {
+//
+//	}
 
 	char comm[20];
     get_current_comm(&comm[0], 20);
     char cm[] = "main";
     if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-        trace_printk("__copy_char_buf bytes: %lu, s[2]: %s, arg:%s",sizeof("__copy_char_buf bytes: %lu, s[2]: %s, arg:%s"),bytes,(char *)&s[2],(char *)arg);
+        trace_printk("__copy_char_buf bytes: %lu, s[2]: %d, arg:%s",sizeof("__copy_char_buf bytes: %lu, s[2]: %d, arg:%s"),bytes,s[2],(char *)arg);
     }
 
 	if (err < 0)

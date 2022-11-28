@@ -523,11 +523,8 @@ __copy_char_buf(long off, unsigned long arg, size_t bytes,
 
 	/* Bound bytes <4095 to ensure bytes does not read past end of buffer */
 //	char buf[MAX_BUF_SIZE] = {0};
-	rd_bytes = bytes < MAX_BUF_SIZE-1 ? bytes : MAX_BUF_SIZE-2;
-	if (rd_bytes < 0) {
-	    return 0;
-	}
-//	rd_bytes &= 0xfff;
+	rd_bytes = bytes;
+	rd_bytes &= 0xFFFFFFFF;
 	err = probe_read(&s[2], rd_bytes, (char *)arg);
 
 //	for (int i=0;i<128;i++) {

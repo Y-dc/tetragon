@@ -569,7 +569,6 @@ copy_char_buf(void *ctx, long off, unsigned long arg, int argm,
 //        trace_printk("copy_char_buf binnary: %s, argm: %d, meta: %s",sizeof("copy_char_buf binnary: %s, argm: %d, meta: %s"),comm, argm, (char *)meta);
 //    }
 	probe_read(&bytes, sizeof(bytes), &meta);
-//	bytes =  bytes > MAX_BUF_SIZE ? MAX_BUF_SIZE : bytes;
 	return __copy_char_buf(off, arg, bytes, e);
 }
 

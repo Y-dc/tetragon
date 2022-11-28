@@ -522,15 +522,21 @@ __copy_char_buf(long off, unsigned long arg, size_t bytes,
 	int err;
 
 	/* Bound bytes <4095 to ensure bytes does not read past end of buffer */
+	char buf[MAX_BUF_SIZE] = {};
 	rd_bytes = bytes;
-	rd_bytes = rd_bytes < 1024 ? rd_bytes : 1023;
-	err = probe_read_str(&s[2], rd_bytes, (char *)arg);
+	rd_bytes = rd_bytes < sizeof(buf) ? rd_bytes : sizeof(buf);
+//	err = probe_read_str(&s[2], rd_bytes, (char *)arg);
+    err = probe_read_str(&buf, sizeof(buf), (char *)arg);
+
+    for (i = 0; i < rd_bytes; i++) {
+        s[2+i] = (int)buf[i];
+    }
 
 	char comm[20];
     get_current_comm(&comm[0], 20);
     char cm[] = "main";
     if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-        trace_printk("__copy_char_buf bytes: %lu, s[2]: %s, arg:%s",sizeof("__copy_char_buf bytes: %lu, s[2]: %s, arg:%s"),bytes,(char *)&s[2],(char *)arg);
+        trace_printk("__copy_char_buf bytes: %lu, s[2]: %d, arg:%s",sizeof("__copy_char_buf bytes: %lu, s[2]: %d, arg:%s"),bytes,s[2],(char *)arg);
     }
 
 	if (err < 0)

@@ -5,13 +5,20 @@ SHELL=/bin/bash # needed for the *.{o,ll,i,s} pattern in the clean target
 
 ALIGNCHECKERDIR = alignchecker/
 PROCESSDIR := process/
+CGROUPDIR := cgroup/
 BPFTESTDIR := test/
 
 ALIGNCHECKER = bpf_alignchecker.o
 PROCESS = bpf_execve_event.o bpf_execve_event_v53.o bpf_fork.o bpf_exit.o bpf_generic_kprobe.o \
 	  bpf_generic_kprobe_v53.o bpf_generic_retkprobe.o bpf_generic_retkprobe_v53.o \
 	  bpf_multi_kprobe_v53.o bpf_multi_retkprobe_v53.o \
-	  bpf_generic_tracepoint.o bpf_generic_tracepoint_v53.o
+	  bpf_generic_tracepoint.o bpf_generic_tracepoint_v53.o \
+	  bpf_execve_event_v60.o \
+	  bpf_generic_kprobe_v60.o bpf_generic_retkprobe_v60.o \
+	  bpf_generic_tracepoint_v60.o \
+	  bpf_multi_kprobe_v60.o bpf_multi_retkprobe_v60.o
+
+CGROUP = bpf_cgroup_mkdir.o bpf_cgroup_rmdir.o bpf_cgroup_release.o
 BPFTEST = bpf_lseek.o bpf_globals.o
 
 IDIR = ./include/
@@ -38,9 +45,10 @@ DEPSDIR       := deps/
 TLSOBJ        := $(addprefix $(OBJSDIR),$(TLS))
 NOPOBJ        := $(addprefix $(OBJSDIR),$(NOP))
 PROCESSOBJ    := $(addprefix $(OBJSDIR),$(PROCESS))
+CGROUPOBJ     := $(addprefix $(OBJSDIR),$(CGROUP))
 TESTOBJ       := $(addprefix $(OBJSDIR),$(BPFTEST))
 ALIGNCHECKEROBJ := $(addprefix $(OBJSDIR),$(ALIGNCHECKER))
-OBJS          := $(PROCESSOBJ) $(TESTOBJ) $(NOPOBJ) $(ALIGNCHECKEROBJ)
+OBJS          := $(PROCESSOBJ) $(CGROUPOBJ) $(TESTOBJ) $(NOPOBJ) $(ALIGNCHECKEROBJ)
 LLOBJS        := $(patsubst $(OBJSDIR)%.o,$(OBJSDIR)%.ll,$(OBJS))
 DEPS          := $(patsubst $(OBJSDIR)%.ll,$(DEPSDIR)%.d,$(LLOBJS))
 
@@ -96,11 +104,41 @@ deps/bpf_generic_tracepoint_v53.d: process/bpf_generic_tracepoint.c
 $(DEPSDIR)%_v53.d:
 	$(CLANG) $(CLANG_FLAGS) -D__LARGE_BPF_PROG -MM -MP -MT $(patsubst $(DEPSDIR)%.d, $(OBJSDIR)%.ll, $@)   $< > $@
 
+objs/bpf_execve_event_v60.ll: process/bpf_execve_event.c
+objs/bpf_generic_kprobe_v60.ll: process/bpf_generic_kprobe.c
+objs/bpf_generic_retkprobe_v60.ll: process/bpf_generic_retkprobe.c
+objs/bpf_multi_kprobe_v60.ll: process/bpf_generic_kprobe.c
+objs/bpf_multi_retkprobe_v60.ll: process/bpf_generic_retkprobe.c
+objs/bpf_generic_tracepoint_v60.ll: process/bpf_generic_tracepoint.c
+
+objs/bpf_multi_kprobe_v60.ll objs/bpf_multi_retkprobe_v60.ll:
+	$(CLANG) $(CLANG_FLAGS) -D__LARGE_BPF_PROG -D__V60_BPF_PROG -D__MULTI_KPROBE -c $< -o $@
+
+objs/%_v60.ll:
+	$(CLANG) $(CLANG_FLAGS) -D__LARGE_BPF_PROG -D__V60_BPF_PROG -c $< -o $@
+
+deps/bpf_execve_event_v60.d: process/bpf_execve_event.c
+deps/bpf_generic_kprobe_v60.d: process/bpf_generic_kprobe.c
+deps/bpf_generic_retkprobe_v60.d: process/bpf_generic_retkprobe.c
+deps/bpf_multi_kprobe_v60.d: process/bpf_generic_kprobe.c
+deps/bpf_multi_retkprobe_v60.d: process/bpf_generic_retkprobe.c
+deps/bpf_generic_tracepoint_v60.d: process/bpf_generic_tracepoint.c
+
+$(DEPSDIR)%_v60.d:
+	$(CLANG) $(CLANG_FLAGS) -D__LARGE_BPF_PROG  -D__V60_BPF_PROG -MM -MP -MT $(patsubst $(DEPSDIR)%.d, $(OBJSDIR)%.ll, $@)   $< > $@
+
 # BPFTESTDIR
 objs/%.ll: $(BPFTESTDIR)%.c
 	$(CLANG) $(CLANG_FLAGS) -c $< -o $@
 
 $(DEPSDIR)%.d: $(BPFTESTDIR)%.c
+	$(CLANG) $(CLANG_FLAGS) -MM -MP -MT $(patsubst $(DEPSDIR)%.d, $(OBJSDIR)%.ll, $@)   $< > $@
+
+# CGROUPDIR
+objs/%.ll: $(CGROUPDIR)%.c
+	$(CLANG) $(CLANG_FLAGS) -c $< -o $@
+
+$(DEPSDIR)%.d: $(CGROUPDIR)%.c
 	$(CLANG) $(CLANG_FLAGS) -MM -MP -MT $(patsubst $(DEPSDIR)%.d, $(OBJSDIR)%.ll, $@)   $< > $@
 
 # Remaining objects are built without mcpu=v2

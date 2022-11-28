@@ -10,8 +10,29 @@
 
 #define NULL ((void *)0)
 
+#ifndef CGROUP_SUPER_MAGIC
+#define CGROUP_SUPER_MAGIC 0x27e0eb /* Cgroupv1 pseudo FS */
+#endif
+
+#ifndef CGROUP2_SUPER_MAGIC
+#define CGROUP2_SUPER_MAGIC 0x63677270 /* Cgroupv2 pseudo FS */
+#endif
+
 /* Our kernfs node name length, can be made 256? */
 #define KN_NAME_LENGTH 128
+
+/* Max nested cgroups that are tracked. Arbitrary value, nested cgroups
+ * that are at a level greater than 32 will be attached to the cgroup
+ * at level 32.
+ */
+#define CGROUP_MAX_NESTED_LEVEL 32
+
+typedef enum {
+	CGROUP_UNTRACKED = 0, /* Cgroup was created but we did not track it */
+	CGROUP_NEW = 1, /* Cgroup was just created */
+	CGROUP_RUNNING = 2, /* new => running (fork,exec task inside) */
+	CGROUP_RUNNING_PROC = 3, /* Generated from pids of procfs */
+} cgroup_state;
 
 /* Represent old kernfs node with the kernfs_node_id
  * union to read the id in 5.4 kernels and older
@@ -19,6 +40,60 @@
 struct kernfs_node___old {
 	union kernfs_node_id id;
 };
+
+struct cgroup_tracking_value {
+	/* State of cgroup */
+	cgroup_state state;
+
+	/* Unique id for the hierarchy this is mostly for cgroupv1 */
+	__u32 hierarchy_id;
+
+	/* The depth this cgroup is at */
+	__u32 level;
+
+	__u32 pad;
+
+	/* Cgroup kernfs_node name */
+	char name[KN_NAME_LENGTH];
+}; // All fields aligned so no 'packed' attribute.
+
+struct msg_cgroup_event {
+	struct msg_common common;
+	struct msg_execve_key parent;
+	__u32 cgrp_op; /* Current cgroup operation */
+	__u32 pid;
+	__u32 nspid;
+	__u32 flags;
+	__u64 ktime;
+	__u64 cgrpid_tracker; /* Cgroup ID that is used as a tracker for the current cgroup */
+	__u64 cgrpid; /* Current cgroup ID */
+	struct cgroup_tracking_value cgrp_data; /* Current cgroup data */
+	char path[PATH_MAP_SIZE]; /* Current cgroup path */
+}; // All fields aligned so no 'packed' attribute.
+
+/* Map to track cgroups per IDs */
+struct {
+	__uint(type, BPF_MAP_TYPE_HASH);
+	__uint(max_entries, 32768);
+	__type(key, __u64); /* Key is the cgrpid */
+	__type(value, struct cgroup_tracking_value);
+} tg_cgrps_tracking_map SEC(".maps");
+
+/* Heap used to construct a cgroup_tracking_value */
+struct {
+	__uint(type, BPF_MAP_TYPE_PERCPU_ARRAY);
+	__uint(max_entries, 1);
+	__type(key, __s32);
+	__type(value, struct cgroup_tracking_value);
+} tg_cgrps_tracking_heap SEC(".maps");
+
+/* Heap used to construct a msg_cgroup_event */
+struct {
+	__uint(type, BPF_MAP_TYPE_PERCPU_ARRAY);
+	__uint(max_entries, 1);
+	__type(key, __u32);
+	__type(value, struct msg_cgroup_event);
+} tg_cgrps_msg_heap SEC(".maps");
 
 /**
  * get_cgroup_kn_name() Returns a pointer to the kernfs node name
@@ -127,6 +202,21 @@ get_cgroup_name(const struct cgroup *cgrp)
 }
 
 /**
+ * get_cgroup_level() Returns the cgroup level
+ * @cgrp: target cgroup
+ *
+ * Returns the cgroup level, or 0 if it can not be retrieved.
+ */
+static inline __attribute__((always_inline)) __u32
+get_cgroup_level(const struct cgroup *cgrp)
+{
+	__u32 level = 0;
+
+	probe_read(&level, sizeof(level), _(&cgrp->level));
+	return level;
+}
+
+/**
  * get_cgroup_id() Returns cgroup id
  * @cgrp: target cgroup
  *
@@ -153,7 +243,7 @@ get_cgroup_id(const struct cgroup *cgrp)
  *
  * To get cgroup and kernfs node information we want to operate on the right
  * cgroup hierarchy which is setup by user space. However due to the
- * incompatiblity between cgroup v1 and v2; how user space initialize and
+ * incompatibility between cgroup v1 and v2; how user space initialize and
  * install cgroup controllers, etc, it can be difficult.
  *
  * Use this helper and pass the css index that you consider accurate and
@@ -204,6 +294,56 @@ get_task_cgroup(struct task_struct *task, __u32 subsys_idx)
 
 	probe_read(&cgrp, sizeof(cgrp), _(&subsys->cgroup));
 	return cgrp;
+}
+
+/**
+ * __get_cgrp_tracking_val_heap() Get a cgroup_tracking_val from the
+ * tg_cgrps_tracking_heap map while setting its fields.
+ */
+static inline __attribute__((always_inline)) struct cgroup_tracking_value *
+__get_cgrp_tracking_val_heap(cgroup_state state, __u32 hierarchy_id,
+			     __u32 level)
+{
+	int zero = 0;
+	struct cgroup_tracking_value *heap;
+
+	heap = map_lookup_elem(&tg_cgrps_tracking_heap, &zero);
+	if (!heap)
+		return heap;
+
+	memset(heap, 0, sizeof(struct cgroup_tracking_value));
+	heap->state = state;
+	heap->hierarchy_id = hierarchy_id;
+	heap->level = level;
+
+	return heap;
+}
+
+/**
+ * __init_cgrp_tracking_val_heap() Initialize a cgroup_tracking_val that is
+ * obtained with __get_cgrp_tracking_val_heap(). It will initialize and
+ * set the cgroup name too.
+ */
+static inline __attribute__((always_inline)) struct cgroup_tracking_value *
+__init_cgrp_tracking_val_heap(struct cgroup *cgrp, cgroup_state state)
+{
+	const char *name;
+	struct kernfs_node *kn;
+	__u32 level, hierarchy_id;
+	struct cgroup_tracking_value *heap;
+
+	hierarchy_id = get_cgroup_hierarchy_id(cgrp);
+	level = get_cgroup_level(cgrp);
+	heap = __get_cgrp_tracking_val_heap(state, hierarchy_id, level);
+	if (!heap)
+		return heap;
+
+	kn = __get_cgroup_kn(cgrp);
+	name = __get_cgroup_kn_name(kn);
+	if (name)
+		probe_read_str(&heap->name, KN_NAME_LENGTH - 1, name);
+
+	return heap;
 }
 
 #endif // __BPF_CGROUP_

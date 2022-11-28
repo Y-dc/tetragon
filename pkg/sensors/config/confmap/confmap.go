@@ -21,8 +21,14 @@ type TetragonConfKey struct {
 }
 
 type TetragonConfValue struct {
+	LogLevel        uint32 `align:"loglevel"`           // Tetragon log level
+	PID             uint32 `align:"pid"`                // Tetragon PID for debugging purpose
+	NSPID           uint32 `align:"nspid"`              // Tetragon PID in namespace for debugging purpose
 	TgCgrpHierarchy uint32 `align:"tg_cgrp_hierarchy"`  // Tetragon Cgroup tracking hierarchy ID
 	TgCgrpSubsysIdx uint32 `align:"tg_cgrp_subsys_idx"` // Tracking Cgroup css idx at compile time
+	TgCgrpLevel     uint32 `align:"tg_cgrp_level"`      // Tetragon cgroup level
+	TgCgrpId        uint64 `align:"tg_cgrpid"`          // Tetragon cgroup ID
+	CgrpFsMagic     uint64 `align:"cgrp_fs_magic"`      // Cgroupv1 or cgroupv2
 }
 
 var (
@@ -40,7 +46,16 @@ func (v *TetragonConfValue) String() string {
 }
 func (v *TetragonConfValue) GetValuePtr() unsafe.Pointer { return unsafe.Pointer(v) }
 func (v *TetragonConfValue) DeepCopyMapValue() bpf.MapValue {
-	return &TetragonConfValue{}
+	return &TetragonConfValue{
+		LogLevel:        v.LogLevel,
+		PID:             v.PID,
+		NSPID:           v.NSPID,
+		TgCgrpHierarchy: v.TgCgrpHierarchy,
+		TgCgrpSubsysIdx: v.TgCgrpSubsysIdx,
+		TgCgrpLevel:     v.TgCgrpLevel,
+		TgCgrpId:        v.TgCgrpId,
+		CgrpFsMagic:     v.CgrpFsMagic,
+	}
 }
 
 // UpdateTgRuntimeConf() Gathers information about Tetragon runtime environment and
@@ -99,8 +114,11 @@ func UpdateTgRuntimeConf(mapDir string, nspid int) error {
 
 	k := &TetragonConfKey{Key: 0}
 	v := &TetragonConfValue{
+		LogLevel:        uint32(logger.GetLogLevel()),
 		TgCgrpHierarchy: cgroups.GetCgrpHierarchyID(),
 		TgCgrpSubsysIdx: cgroups.GetCgrpSubsystemIdx(),
+		NSPID:           uint32(nspid),
+		CgrpFsMagic:     cgroupFsMagic,
 	}
 
 	err = m.Update(k, v)
@@ -113,11 +131,33 @@ func UpdateTgRuntimeConf(mapDir string, nspid int) error {
 	log.WithFields(logrus.Fields{
 		"confmap-update":                configMap.Name,
 		"deployment.mode":               cgroups.DeploymentCode(deployMode).String(),
-		"cgroup.fs.magic":               cgroups.CgroupFsMagicStr(cgroupFsMagic),
+		"log.level":                     logrus.Level(v.LogLevel).String(),
+		"cgroup.fs.magic":               cgroups.CgroupFsMagicStr(v.CgrpFsMagic),
 		"cgroup.controller.name":        cgroups.GetCgrpControllerName(),
 		"cgroup.controller.hierarchyID": v.TgCgrpHierarchy,
 		"cgroup.controller.index":       v.TgCgrpSubsysIdx,
+		"NSPID":                         nspid,
 	}).Info("Updated TetragonConf map successfully")
 
 	return nil
+}
+
+func ReadTgRuntimeConf(mapDir string) (*TetragonConfValue, error) {
+	configMap := base.GetTetragonConfMap()
+	mapPath := filepath.Join(mapDir, configMap.Name)
+
+	m, err := bpf.OpenMap(mapPath)
+	if err != nil {
+		return nil, err
+	}
+
+	defer m.Close()
+
+	k := &TetragonConfKey{Key: 0}
+	v, err := m.Lookup(k)
+	if err != nil {
+		return nil, err
+	}
+
+	return v.DeepCopyMapValue().(*TetragonConfValue), nil
 }

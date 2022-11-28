@@ -160,87 +160,112 @@ prepend(char **buffer, int *buflen, const char *str, int namelen)
 	return 0;
 }
 
+struct cwd_read_data {
+	struct dentry *root_dentry;
+	struct vfsmount *root_mnt;
+	char *bf;
+	struct dentry *dentry;
+	struct vfsmount *vfsmnt;
+	struct mount *mnt;
+	char *bptr;
+	int blen;
+	bool resolved;
+};
+
+static inline __attribute__((always_inline)) long
+cwd_read(struct cwd_read_data *data)
+{
+	struct qstr d_name;
+	struct dentry *parent;
+	struct dentry *vfsmnt_mnt_root;
+	struct dentry *dentry = data->dentry;
+	struct vfsmount *vfsmnt = data->vfsmnt;
+	struct mount *mnt = data->mnt;
+	int error;
+
+	if (!(dentry != data->root_dentry || vfsmnt != data->root_mnt)) {
+		data->resolved =
+			true; // resolved all path components successfully
+		return 1;
+	}
+
+	probe_read(&vfsmnt_mnt_root, sizeof(vfsmnt_mnt_root),
+		   _(&vfsmnt->mnt_root));
+	if (dentry == vfsmnt_mnt_root || IS_ROOT(dentry)) {
+		struct mount *parent;
+
+		probe_read(&parent, sizeof(parent), _(&mnt->mnt_parent));
+
+		/* Global root? */
+		if (data->mnt != parent) {
+			probe_read(&data->dentry, sizeof(data->dentry),
+				   _(&mnt->mnt_mountpoint));
+			data->mnt = parent;
+			probe_read(&data->vfsmnt, sizeof(data->vfsmnt),
+				   _(&mnt->mnt));
+			return 0;
+		}
+		// resolved all path components successfully
+		data->resolved = true;
+		return 1;
+	}
+	probe_read(&parent, sizeof(parent), _(&dentry->d_parent));
+	probe_read(&d_name, sizeof(d_name), _(&dentry->d_name));
+	error = prepend_name(data->bf, &data->bptr, &data->blen,
+			     (const char *)d_name.name, d_name.len);
+	// This will happen where the dentry name does not fit in the buffer.
+	// We will stop the loop with resolved == false and later we will
+	// set the proper value in error before function return.
+	if (error)
+		return 1;
+
+	data->dentry = parent;
+	return 0;
+}
+
+#ifdef __V60_BPF_PROG
+static long cwd_read_v60(__u32 index, void *data)
+{
+	return cwd_read(data);
+}
+#endif
+
 static inline __attribute__((always_inline)) int
 prepend_path(const struct path *path, const struct path *root, char *bf,
 	     char **buffer, int *buflen)
 {
-	struct dentry *dentry;
-	struct vfsmount *vfsmnt;
-	struct mount *mnt;
-	struct qstr d_name;
+	struct cwd_read_data data = {
+		.bf = bf,
+		.bptr = *buffer,
+		.blen = *buflen,
+	};
 	int error = 0;
-	char *bptr;
-	int i, blen;
-	bool resolved = false;
 
-	bptr = *buffer;
-	blen = *buflen;
-	probe_read(&dentry, sizeof(dentry), _(&path->dentry));
-	probe_read(&vfsmnt, sizeof(vfsmnt), _(&path->mnt));
-	mnt = real_mount(vfsmnt);
+	probe_read(&data.root_dentry, sizeof(data.root_dentry),
+		   _(&root->dentry));
+	probe_read(&data.root_mnt, sizeof(data.root_mnt), _(&root->mnt));
+	probe_read(&data.dentry, sizeof(data.dentry), _(&path->dentry));
+	probe_read(&data.vfsmnt, sizeof(data.vfsmnt), _(&path->mnt));
+	data.mnt = real_mount(data.vfsmnt);
 
-#ifndef __LARGE_BPF_PROG
+#ifndef __V60_BPF_PROG
 #pragma unroll
-#else
-#pragma nounroll
-#endif
-	for (i = 0; i < PROBE_CWD_READ_ITERATIONS;
-	     ++i) { // maximum number of path compoments
-		struct dentry *parent;
-		struct dentry *vfsmnt_mnt_root;
-		struct vfsmount *root_mnt;
-		struct dentry *root_dentry;
-
-		probe_read(&root_dentry, sizeof(root_dentry), _(&root->dentry));
-		probe_read(&root_mnt, sizeof(root_mnt), _(&root->mnt));
-		if (!(dentry != root_dentry || vfsmnt != root_mnt)) {
-			resolved =
-				true; // resolved all path components successfully
+	for (int i = 0; i < PROBE_CWD_READ_ITERATIONS; ++i) {
+		if (cwd_read(&data))
 			break;
-		}
-
-		probe_read(&vfsmnt_mnt_root, sizeof(vfsmnt_mnt_root),
-			   _(&vfsmnt->mnt_root));
-		if (dentry == vfsmnt_mnt_root || IS_ROOT(dentry)) {
-			struct mount *parent;
-
-			probe_read(&parent, sizeof(parent),
-				   _(&mnt->mnt_parent));
-
-			/* Global root? */
-			if (mnt != parent) {
-				probe_read(&dentry, sizeof(dentry),
-					   _(&mnt->mnt_mountpoint));
-				mnt = parent;
-				probe_read(&vfsmnt, sizeof(vfsmnt),
-					   _(&mnt->mnt));
-				continue;
-			}
-
-			resolved =
-				true; // resolved all path components successfully
-			break;
-		}
-		probe_read(&parent, sizeof(parent), _(&dentry->d_parent));
-		probe_read(&d_name, sizeof(d_name), _(&dentry->d_name));
-		error = prepend_name(bf, &bptr, &blen,
-				     (const char *)d_name.name, d_name.len);
-		// This will happen where the dentry name does not fit in the buffer.
-		// We will stop the loop with resolved == false and later we will
-		// set the proper value in error before function return.
-		if (error)
-			break;
-
-		dentry = parent;
 	}
-	if (bptr == *buffer) {
+#else
+	loop(PROBE_CWD_READ_ITERATIONS, cwd_read_v60, (void *)&data, 0);
+#endif /* __V60_BPF_PROG */
+
+	if (data.bptr == *buffer) {
 		*buflen = 0;
 		return 0;
 	}
-	if (!resolved)
+	if (!data.resolved)
 		error = UNRESOLVED_PATH_COMPONENTS;
-	*buffer = bptr;
-	*buflen = blen;
+	*buffer = data.bptr;
+	*buflen = data.blen;
 	return error;
 }
 

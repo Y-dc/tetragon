@@ -8,6 +8,7 @@ package cgroups
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -154,6 +155,10 @@ func CgroupFsMagicStr(magic uint64) string {
 
 func GetCgroupFSMagic() uint64 {
 	return cgroupFSMagic
+}
+
+func GetCgroupFSPath() string {
+	return cgroupFSPath
 }
 
 // DiscoverSubSysIds() Discover Cgroup SubSys IDs and indexes.
@@ -660,4 +665,13 @@ func DetectCgroupFSMagic() (uint64, error) {
 	}
 
 	return cgroupFSMagic, nil
+}
+
+// CgroupNameFromCstr() Returns a Golang string from the passed C language format string.
+func CgroupNameFromCStr(cstr []byte) string {
+	i := bytes.IndexByte(cstr, 0)
+	if i == -1 {
+		i = len(cstr)
+	}
+	return string(cstr[:i])
 }

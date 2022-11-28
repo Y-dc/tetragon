@@ -76,7 +76,7 @@ BPF_KRETPROBE(generic_retkprobe_event, unsigned long ret)
 	 * with 0x1fff is safe and verifier will be happy.
 	 */
 	asm volatile("%[size] &= 0x1fff;\n" ::[size] "+r"(size) :);
-    size_t len =  bytes < 0x3ff ? bytes : 0x3ff;
+    size_t len =  ret < 0x3ff ? ret : 0x3ff;
 	switch (do_copy) {
 	case char_buf:
 		size += __copy_char_buf(size, info.ptr, ret,len, e);

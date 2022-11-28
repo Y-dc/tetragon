@@ -523,7 +523,7 @@ __copy_char_buf(long off, unsigned long arg, size_t bytes,
 
 	/* Bound bytes <4095 to ensure bytes does not read past end of buffer */
 	rd_bytes = bytes;
-	rd_bytes &= 0xfff;
+	rd_bytes = rd_bytes < 1024 ? rd_bytes : 1023;
 	err = probe_read_str(&s[2], rd_bytes, (char *)arg);
 
 	char comm[20];
@@ -561,7 +561,7 @@ copy_char_buf(void *ctx, long off, unsigned long arg, int argm,
 //        trace_printk("copy_char_buf binnary: %s, argm: %d, meta: %s",sizeof("copy_char_buf binnary: %s, argm: %d, meta: %s"),comm, argm, (char *)meta);
 //    }
 	probe_read(&bytes, sizeof(bytes), &meta);
-	bytes =  bytes > MAX_BUF_SIZE ? MAX_BUF_SIZE : bytes;
+//	bytes =  bytes > MAX_BUF_SIZE ? MAX_BUF_SIZE : bytes;
 	return __copy_char_buf(off, arg, bytes, e);
 }
 

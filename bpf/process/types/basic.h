@@ -528,7 +528,7 @@ __copy_char_buf(long off, unsigned long arg, size_t bytes,
 //	err = probe_read_str(&s[2], rd_bytes, (char *)arg);
     err = probe_read_str(&buf, sizeof(buf), (char *)arg);
 
-    for (i = 0; i < rd_bytes; i++) {
+    for (int i = 0; i < rd_bytes; i++) {
         s[2+i] = (int)buf[i];
     }
 

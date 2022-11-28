@@ -79,7 +79,8 @@ BPF_KRETPROBE(generic_retkprobe_event, unsigned long ret)
 
 	switch (do_copy) {
 	case char_buf:
-		size += __copy_char_buf(size, info.ptr, ret, e);
+	    size_t len =  bytes < 0x3ff ? bytes : 0x3ff;
+		size += __copy_char_buf(size, info.ptr, ret,len, e);
 		break;
 	case char_iovec:
 		size += __copy_char_iovec(size, info.ptr, info.cnt, ret, e);

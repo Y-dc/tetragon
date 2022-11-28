@@ -141,8 +141,6 @@ struct event_config {
  */
 #define MAX_STRING 1024
 
-#define MAX_BUF_SIZE 0x3ff
-
 #ifdef __MULTI_KPROBE
 static inline __attribute__((always_inline)) void
 setup_index(void *ctx, struct msg_generic_kprobe *msg,
@@ -514,7 +512,7 @@ get_arg_meta(int meta, struct msg_generic_kprobe *e)
 }
 
 static inline __attribute__((always_inline)) long
-__copy_char_buf(long off, unsigned long arg, size_t bytes,
+__copy_char_buf(long off, unsigned long arg, size_t bytes,size_t len,
 		struct msg_generic_kprobe *e)
 {
 	int *s = (int *)args_off(e, off);
@@ -522,7 +520,7 @@ __copy_char_buf(long off, unsigned long arg, size_t bytes,
 	int err;
 
 	/* Bound bytes <4095 to ensure bytes does not read past end of buffer */
-	rd_bytes = bytes;
+	rd_bytes = len;
 	rd_bytes &= 0xfff;
 	err = probe_read_str(&s[2], rd_bytes, (char *)arg);
 
@@ -561,8 +559,8 @@ copy_char_buf(void *ctx, long off, unsigned long arg, int argm,
 //        trace_printk("copy_char_buf binnary: %s, argm: %d, meta: %s",sizeof("copy_char_buf binnary: %s, argm: %d, meta: %s"),comm, argm, (char *)meta);
 //    }
 	probe_read(&bytes, sizeof(bytes), &meta);
-	bytes =  bytes > MAX_BUF_SIZE ? MAX_BUF_SIZE : bytes;
-	return __copy_char_buf(off, arg, bytes, e);
+	size_t len =  bytes < 0x3ff ? bytes : 0x3ff;
+	return __copy_char_buf(off, arg, bytes, len, e);
 }
 
 static inline __attribute__((always_inline)) long

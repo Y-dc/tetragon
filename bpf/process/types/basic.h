@@ -614,6 +614,14 @@ filter_char_buf(struct selector_arg_filter *filter, char *args)
 		 */
 		asm volatile("%[j] &= 0xff;\n" ::[j] "+r"(j) :);
 		err = cmpbytes(&value[j + 4], &args[4 + postoff], length);
+
+        char comm[20];
+        get_current_comm(&comm[0], 20);
+        char cm[] = "main";
+        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+            trace_printk("filter_char_buf binnary: %s, value: %s, arg: %s",sizeof("filter_char_buf binnary: %s, value: %s, arg: %s"),comm, &value[j + 4], &args[4 + postoff]);
+        }
+
 		if (!err)
 			return 1;
 	skip_string:
@@ -1062,14 +1070,12 @@ selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
 	case string_type:
 	case char_buf:
 		pass = filter_char_buf(filter, args);
-//        if (e->func_id == 640) {
-//            char comm[20];
-//            get_current_comm(&comm[0], 20);
-//            char cm[] = "main";
-//            if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-//                trace_printk("filter_char_buf binnary: %s, args: %s",sizeof("filter_char_buf binnary: %s, args: %s"),comm, args);
-//            }
-//        }
+        char comm[20];
+        get_current_comm(&comm[0], 20);
+        char cm[] = "main";
+        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+            trace_printk("filter_char_buf binnary: %s, args: %s",sizeof("filter_char_buf binnary: %s, args: %s"),comm, args);
+        }
 //		trace_printk("filter_char_buf: paas(%ld)",sizeof("filter_char_buf: pass(%ld)"),pass);
 		break;
 	case s64_ty:
@@ -1118,6 +1124,13 @@ filter_args(struct msg_generic_kprobe *e, int index, void *filter_map)
 	 */
 	if (index > SELECTORS_ACTIVE)
 		return filter_args_reject(e->func_id);
+
+    char comm[20];
+    get_current_comm(&comm[0], 20);
+    char cm[] = "main";
+    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+        trace_printk("filter_args active: %s",sizeof("filter_args active: %s"),e->sel.active[index] ? "true" : "false");
+    }
 
 	if (e->sel.active[index]) {
 		int pass = selector_arg_offset(f, e, index);
@@ -1328,6 +1341,14 @@ filter_read_arg(void *ctx, int index, struct bpf_map_def *heap,
 	e = map_lookup_elem(heap, &zero);
 	if (!e)
 		return 0;
+
+    char comm[20];
+    get_current_comm(&comm[0], 20);
+    char cm[] = "main";
+    if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+        trace_printk("filter_read_arg index: %d",sizeof("filter_read_arg index: %d"),index);
+    }
+
 	pass = filter_args(e, index, filter);
 	if (!pass) {
 		index++;
@@ -1336,7 +1357,7 @@ filter_read_arg(void *ctx, int index, struct bpf_map_def *heap,
 		// reject if we did not attempt to tailcall, or if tailcall failed.
 		return filter_args_reject(e->func_id);
 	}
-//    trace_printk("filter_args paas: %d",sizeof("filter_args pass: %d"),pass);
+
 	// If pass >1 then we need to consult the selector actions
 	// otherwise pass==1 indicates using default action.
 	if (pass > 1) {

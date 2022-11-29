@@ -534,7 +534,7 @@ __copy_char_buf(long off, unsigned long arg, size_t bytes,
 //    __read_bytes_shrink(&bytes);
 	rd_bytes = bytes;
 	size_t * t  = &rd_bytes;
-    if(bytes > 0xfff) {
+    if(rd_bytes > 0xfff) {
         *t = 0xfff;
     }
     rd_bytes &= 0xfff;

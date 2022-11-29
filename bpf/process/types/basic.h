@@ -1049,7 +1049,7 @@ selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
 	asm volatile("%[seloff] &= 0xfff;\n" ::[seloff] "+r"(seloff) :);
 	filter = (struct selector_arg_filter *)&f[seloff];
     if (m){
-        trace_printk("selector_arg_offset filter: %lu, index: %lu",sizeof("selector_arg_offset filter: %lu, index: %lu"),filter->arglen,filter->index);
+        trace_printk("selector_arg_offset filter: %u, index: %u",sizeof("selector_arg_offset filter: %u, index: %u"),filter->arglen,filter->index);
     }
 	if (filter->arglen <= 4) // no filters
 		return seloff;

@@ -1126,8 +1126,8 @@ filter_args(struct msg_generic_kprobe *e, int index, void *filter_map)
 //        trace_printk("filter_args filter_map lookup",sizeof("filter_args filter_map lookup"));
 //    }
 	/* No selectors, accept by default */
-	if (!e->sel.active[SELECTORS_ACTIVE])
-		return 1;
+//	if (!e->sel.active[SELECTORS_ACTIVE])
+//		return 1;
 
 //    if (m){
 //        trace_printk("filter_args filter_map active",sizeof("filter_args filter_map active"));

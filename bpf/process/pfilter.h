@@ -567,12 +567,12 @@ generic_process_filter(struct msg_selector_data *sel,
 			f, curr, enter, sel, ns,
 			caps); /* matches the PID and Namespace */
 
-		char comm[5];
-        get_current_comm(&comm[0], 5);
-        char cm[] = "main";
-        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-            trace_printk("selector_process_filter pass: %d",sizeof("selector_process_filter pass: %d"), pass);
-        }
+//		char comm[5];
+//        get_current_comm(&comm[0], 5);
+//        char cm[] = "main";
+//        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+//            trace_printk("selector_process_filter pass: %d",sizeof("selector_process_filter pass: %d"), pass);
+//        }
 
 		if (pass) {
 			/* Verify lost that msg is not null here so recheck */

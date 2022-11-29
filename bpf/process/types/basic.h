@@ -978,12 +978,13 @@ static inline __attribute__((always_inline)) int
 selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
 {
 //    if (e->func_id == 640) {
-//        char comm[20];
-//        get_current_comm(&comm[0], 20);
-//        char cm[] = "main";
-//        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-//            trace_printk("selector_arg_offset binnary: %s",sizeof("selector_arg_offset binnary: %s"),comm);
-//        }
+        char comm[20];
+        get_current_comm(&comm[0], 20);
+        char cm[] = "main";
+        bool m = comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3];
+        if (m){
+            trace_printk("selector_arg_offset binnary: %s",sizeof("selector_arg_offset binnary: %s"),comm);
+        }
 //    }
 
 	struct selector_arg_filter *filter;
@@ -1047,7 +1048,9 @@ selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
 	/* Making binary selectors fixes size helps on some kernels */
 	asm volatile("%[seloff] &= 0xfff;\n" ::[seloff] "+r"(seloff) :);
 	filter = (struct selector_arg_filter *)&f[seloff];
-
+    if (m){
+        trace_printk("selector_arg_offset filter: %lu, index: %lu",sizeof("selector_arg_offset filter: %lu, index: %lu"),filter->arglen,filter->index);
+    }
 	if (filter->arglen <= 4) // no filters
 		return seloff;
 
@@ -1069,12 +1072,12 @@ selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
 		break;
 	case string_type:
 	case char_buf:
-//        char comm[20];
-//        get_current_comm(&comm[0], 20);
-//        char cm[] = "main";
-//        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-//            trace_printk("filter_char_buf binnary: %s, args: %s",sizeof("filter_char_buf binnary: %s, args: %s"),comm, args);
-//        }
+        char comm[20];
+        get_current_comm(&comm[0], 20);
+        char cm[] = "main";
+        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+            trace_printk("filter_char_buf binnary: %s, args: %s",sizeof("filter_char_buf binnary: %s, args: %s"),comm, args);
+        }
 		pass = filter_char_buf(filter, args);
 
 //		trace_printk("filter_char_buf: paas(%ld)",sizeof("filter_char_buf: pass(%ld)"),pass);
@@ -1114,7 +1117,7 @@ filter_args(struct msg_generic_kprobe *e, int index, void *filter_map)
     char cm[] = "main";
     bool m = comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3];
     if (m){
-        trace_printk("filter_args active: %s",sizeof("filter_args active: %s"),e->sel.active[index] ? "true" : "false");
+        trace_printk("filter_args index: %d, active: %s",sizeof("filter_args index: %d, active: %s"),index,e->sel.active[index] ? "true" : "false");
     }
 
 	/* No filters and no selectors so just accepts */
@@ -1136,14 +1139,14 @@ filter_args(struct msg_generic_kprobe *e, int index, void *filter_map)
 	 * events early. Now we need to ensure that active pid sselectors
 	 * have their arg filters run.
 	 */
-	if (index > SELECTORS_ACTIVE)
+//	if (index > SELECTORS_ACTIVE)
 		return filter_args_reject(e->func_id);
 
-	if (e->sel.active[index]) {
+//	if (e->sel.active[index]) {
 		int pass = selector_arg_offset(f, e, index);
 		if (pass)
 			return pass;
-	}
+//	}
 	return 0;
 }
 

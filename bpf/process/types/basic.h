@@ -615,12 +615,12 @@ filter_char_buf(struct selector_arg_filter *filter, char *args)
 		asm volatile("%[j] &= 0xff;\n" ::[j] "+r"(j) :);
 		err = cmpbytes(&value[j + 4], &args[4 + postoff], length);
 
-        char comm[20];
-        get_current_comm(&comm[0], 20);
-        char cm[] = "main";
-        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-            trace_printk("filter_char_buf binnary: %s, value: %s, arg: %s",sizeof("filter_char_buf binnary: %s, value: %s, arg: %s"),comm, &value[j + 4], &args[4 + postoff]);
-        }
+//        char comm[20];
+//        get_current_comm(&comm[0], 20);
+//        char cm[] = "main";
+//        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+//            trace_printk("filter_char_buf binnary: %s, value: %s, arg: %s",sizeof("filter_char_buf binnary: %s, value: %s, arg: %s"),comm, &value[j + 4], &args[4 + postoff]);
+//        }
 
 		if (!err)
 			return 1;
@@ -1069,13 +1069,14 @@ selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
 		break;
 	case string_type:
 	case char_buf:
+//        char comm[20];
+//        get_current_comm(&comm[0], 20);
+//        char cm[] = "main";
+//        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+//            trace_printk("filter_char_buf binnary: %s, args: %s",sizeof("filter_char_buf binnary: %s, args: %s"),comm, args);
+//        }
 		pass = filter_char_buf(filter, args);
-        char comm[20];
-        get_current_comm(&comm[0], 20);
-        char cm[] = "main";
-        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-            trace_printk("filter_char_buf binnary: %s, args: %s",sizeof("filter_char_buf binnary: %s, args: %s"),comm, args);
-        }
+
 //		trace_printk("filter_char_buf: paas(%ld)",sizeof("filter_char_buf: pass(%ld)"),pass);
 		break;
 	case s64_ty:

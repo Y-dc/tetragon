@@ -523,7 +523,7 @@ __read_bytes_shrink(unsigned long *num){
 }
 
 static inline __attribute__((always_inline)) long
-__copy_char_buf(long off, unsigned long arg, size_t bytes,
+__copy_char_buf(long off, unsigned long arg, unsigned long bytes,
 		struct msg_generic_kprobe *e)
 {
 	int *s = (int *)args_off(e, off);
@@ -532,11 +532,11 @@ __copy_char_buf(long off, unsigned long arg, size_t bytes,
 
 	/* Bound bytes <4095 to ensure bytes does not read past end of buffer */
 //    __read_bytes_shrink(&bytes);
-	rd_bytes = bytes;
-	size_t * t  = &rd_bytes;
-    if(rd_bytes > 0xfff) {
+    unsigned long t  = bytes;
+    if(t > 0xfff) {
         *t = 0xfff;
     }
+	rd_bytes = t;
     rd_bytes &= 0xfff;
 	err = probe_read(&s[2], rd_bytes, (char *)arg);
 

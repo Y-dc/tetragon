@@ -513,13 +513,13 @@ get_arg_meta(int meta, struct msg_generic_kprobe *e)
 	return 0;
 }
 
-static inline __attribute__((always_inline)) void
-__read_bytes_shrink(size_t *num){
-	if(*num > 0xfff){
-		*num >>= 1;
+static inline __attribute__((always_inline)) size_t
+__read_bytes_shrink(size_t num){
+	if(num > 0xfff){
+		num >>= 1;
 		return __read_bytes_shrink(num);
 	}
-	return;
+	return num;
 }
 
 static inline __attribute__((always_inline)) long
@@ -533,7 +533,7 @@ __copy_char_buf(long off, unsigned long arg, unsigned long bytes,
 	/* Bound bytes <4095 to ensure bytes does not read past end of buffer */
 
 	rd_bytes = bytes;
-	__read_bytes_shrink(&rd_bytes);
+	rd_bytes = __read_bytes_shrink(rd_bytes);
     rd_bytes &= 0xfff;
 	err = probe_read(&s[2], rd_bytes, (char *)arg);
 

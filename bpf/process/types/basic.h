@@ -1137,7 +1137,7 @@ filter_args(struct msg_generic_kprobe *e, int index, void *filter_map)
 	 * have their arg filters run.
 	 */
 //	if (index > SELECTORS_ACTIVE)
-		return filter_args_reject(e->func_id);
+//		return filter_args_reject(e->func_id);
 
 //	if (e->sel.active[index]) {
 		int pass = selector_arg_offset(f, e, index);

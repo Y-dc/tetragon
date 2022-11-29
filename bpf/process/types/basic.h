@@ -515,8 +515,8 @@ get_arg_meta(int meta, struct msg_generic_kprobe *e)
 
 static inline __attribute__((always_inline)) void
 __read_bytes_shrink(size_t *num){
-	if(num > 0x3ff){
-		num >>= 1;
+	if(*num > 0x3ff){
+		*num >>= 1;
 		return __read_bytes_shrink(num);
 	}
 	return;

@@ -1109,29 +1109,29 @@ filter_args(struct msg_generic_kprobe *e, int index, void *filter_map)
 {
 	__u8 *f;
 
-    char comm[20];
-    get_current_comm(&comm[0], 20);
-    char cm[] = "main";
-    bool m = comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3];
-    if (m){
-        trace_printk("filter_args index: %d, active: %s",sizeof("filter_args index: %d, active: %s"),index,e->sel.active[index] ? "true" : "false");
-    }
+//    char comm[20];
+//    get_current_comm(&comm[0], 20);
+//    char cm[] = "main";
+//    bool m = comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3];
+//    if (m){
+//        trace_printk("filter_args index: %d, active: %s",sizeof("filter_args index: %d, active: %s"),index,e->sel.active[index] ? "true" : "false");
+//    }
 
 	/* No filters and no selectors so just accepts */
 	f = map_lookup_elem(filter_map, &e->idx);
 	if (!f) {
 		return 1;
 	}
-    if (m){
-        trace_printk("filter_args filter_map lookup",sizeof("filter_args filter_map lookup"));
-    }
+//    if (m){
+//        trace_printk("filter_args filter_map lookup",sizeof("filter_args filter_map lookup"));
+//    }
 	/* No selectors, accept by default */
 	if (!e->sel.active[SELECTORS_ACTIVE])
 		return 1;
 
-    if (m){
-        trace_printk("filter_args filter_map active",sizeof("filter_args filter_map active"));
-    }
+//    if (m){
+//        trace_printk("filter_args filter_map active",sizeof("filter_args filter_map active"));
+//    }
 	/* We ran process filters early as a prefilter to drop unrelated
 	 * events early. Now we need to ensure that active pid sselectors
 	 * have their arg filters run.

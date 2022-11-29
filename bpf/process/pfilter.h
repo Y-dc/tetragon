@@ -572,7 +572,7 @@ generic_process_filter(struct msg_selector_data *sel,
         char cm[] = "main";
         bool m = comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3];
         if (m){
-            trace_printk("selector_process_filter paas: %d",sizeof("selector_process_filter paas: %d"), paas);
+            trace_printk("selector_process_filter pass: %d",sizeof("selector_process_filter pass: %d"), pass);
         }
 
 		if (pass) {

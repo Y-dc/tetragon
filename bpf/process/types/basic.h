@@ -1070,7 +1070,7 @@ selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
 	case string_type:
 	case char_buf:
         if (m){
-            trace_printk("filter_char_buf binnary: %s, args: %s",sizeof("filter_char_buf binnary: %s, args: %s"),comm, &args);
+            trace_printk("filter_char_buf binnary: %s, args: %s",sizeof("filter_char_buf binnary: %s, args: %s"),comm, args);
         }
 		pass = filter_char_buf(filter, args);
 		break;

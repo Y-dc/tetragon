@@ -615,12 +615,12 @@ filter_char_buf(struct selector_arg_filter *filter, char *args)
 		asm volatile("%[j] &= 0xff;\n" ::[j] "+r"(j) :);
 		err = cmpbytes(&value[j + 4], &args[4 + postoff], length);
 
-//        char comm[20];
-//        get_current_comm(&comm[0], 20);
-//        char cm[] = "main";
-//        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
-//            trace_printk("filter_char_buf binnary: %s, value: %s, arg: %s",sizeof("filter_char_buf binnary: %s, value: %s, arg: %s"),comm, &value[j + 4], &args[4 + postoff]);
-//        }
+        char comm[20];
+        get_current_comm(&comm[0], 20);
+        char cm[] = "main";
+        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+            trace_printk("filter_char_buf value: %s, arg: %s",sizeof("filter_char_buf value: %s, arg: %s"),&value[j + 4], &args[4 + postoff]);
+        }
 
 		if (!err)
 			return 1;
@@ -978,13 +978,10 @@ static inline __attribute__((always_inline)) int
 selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
 {
 //    if (e->func_id == 640) {
-        char comm[20];
-        get_current_comm(&comm[0], 20);
-        char cm[] = "main";
-        bool m = comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3];
-        if (m){
-            trace_printk("selector_arg_offset binnary: %s",sizeof("selector_arg_offset binnary: %s"),comm);
-        }
+    char comm[20];
+    get_current_comm(&comm[0], 20);
+    char cm[] = "main";
+    bool m = comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3];
 //    }
 
 	struct selector_arg_filter *filter;
@@ -1073,11 +1070,9 @@ selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
 	case string_type:
 	case char_buf:
         if (m){
-            trace_printk("filter_char_buf binnary: %s, args: %s",sizeof("filter_char_buf binnary: %s, args: %s"),comm, args);
+            trace_printk("filter_char_buf binnary: %s, args: %s",sizeof("filter_char_buf binnary: %s, args: %s"),comm, &args);
         }
 		pass = filter_char_buf(filter, args);
-
-//		trace_printk("filter_char_buf: paas(%ld)",sizeof("filter_char_buf: pass(%ld)"),pass);
 		break;
 	case s64_ty:
 	case u64_ty:

@@ -6,6 +6,7 @@ package tracing
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"path"
@@ -396,6 +397,7 @@ func (tp *genericTracepoint) KernelSelectors() (*selectors.KernelSelectorState, 
 		// update selectors
 		for j, s := range selSelectors {
 			for k, match := range s.MatchArgs {
+				fmt.Printf("match index %d, tpIdx %d\n",match.Index, tpArg.TpIdx)
 				if match.Index == uint32(tpArg.TpIdx) {
 					selSelectors[j].MatchArgs[k].Index = uint32(tpArg.ArgIdx)
 				}
@@ -403,6 +405,8 @@ func (tp *genericTracepoint) KernelSelectors() (*selectors.KernelSelectorState, 
 		}
 	}
 
+	js,_ := json.Marshal(selSelectors)
+	fmt.Println("selSelectors:",string(js))
 	return selectors.InitKernelSelectorState(selSelectors, selArgs)
 }
 

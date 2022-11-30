@@ -361,7 +361,8 @@ func createGenericTracepointSensor(name string, confs []GenericTracepointConf) (
 		argFilterMaps := program.MapBuilderPin("argfilter_maps", sensors.PathJoin(pinPath, "argfilter_maps"), prog0)
 		maps = append(maps, argFilterMaps)
 	}
-
+	js,_ := json.Marshal(genericTracepointTable.arr)
+	fmt.Println("createGenericTracepointSensor genericTracepointTable: ",string(js))
 	return &sensors.Sensor{
 		Name:  name,
 		Progs: progs,
@@ -649,8 +650,6 @@ func (t *observerTracepointSensor) SpecHandler(raw interface{}) (*sensors.Sensor
 	if len(spec.Tracepoints) > 0 {
 		return createGenericTracepointSensor(name, spec.Tracepoints)
 	}
-	js,_ := json.Marshal(genericTracepointTable.arr)
-	fmt.Println("SpecHandler genericTracepointTable: ",string(js))
 	return nil, nil
 }
 

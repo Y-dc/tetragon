@@ -319,8 +319,10 @@ func createGenericTracepointSensor(name string, confs []GenericTracepointConf) (
 	tracepoints := make([]*genericTracepoint, 0, len(confs))
 	js,_ := json.Marshal(genericTracepointTable.arr)
 	fmt.Println("before creating genericTracepointTable: ",string(js))
-	for _, conf := range confs {
-		tp, err := createGenericTracepoint(name, &conf)
+	js,_ = json.Marshal(confs)
+	fmt.Println("before creating confs: ",string(js))
+	for i := range confs {
+		tp, err := createGenericTracepoint(name, &confs[i])
 		if err != nil {
 			return nil, err
 		}

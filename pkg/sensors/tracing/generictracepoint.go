@@ -309,7 +309,8 @@ func createGenericTracepoint(sensorName string, conf *GenericTracepointConf) (*g
 		Spec: conf,
 		args: tpArgs,
 	}
-
+	js,_ := json.Marshal(conf)
+	fmt.Println("TracepointSpec:",string(js))
 	genericTracepointTable.addTracepoint(ret)
 	fmt.Printf("addTracepoint event: %s, idx: %d\n", ret.Info.Event,ret.tableIdx)
 	ret.pinPathPrefix = sensors.PathJoin(sensorName, fmt.Sprintf("gtp-%d", ret.tableIdx))
@@ -318,7 +319,8 @@ func createGenericTracepoint(sensorName string, conf *GenericTracepointConf) (*g
 
 // createGenericTracepointSensor will create a sensor that can be loaded based on a generic tracepoint configuration
 func createGenericTracepointSensor(name string, confs []GenericTracepointConf) (*sensors.Sensor, error) {
-
+	js,_ := json.Marshal(confs)
+	fmt.Println("All TracepointSpec:",string(js))
 	tracepoints := make([]*genericTracepoint, 0, len(confs))
 	for _, conf := range confs {
 		tp, err := createGenericTracepoint(name, &conf)

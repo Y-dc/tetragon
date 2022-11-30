@@ -534,8 +534,8 @@ __copy_char_buf(long off, unsigned long arg, unsigned long bytes,
 
 	rd_bytes = bytes;
 //	__read_bytes_shrink(&rd_bytes);
-    rd_bytes = bytes < 0x1000 ? bytes : 0xfff;
-    asm volatile("%[rd_bytes] &= 0xfff;\n" ::[rd_bytes] "+r"(rd_bytes) :);
+    rd_bytes = bytes < 0x400 ? bytes : 0x3ff;
+    asm volatile("%[rd_bytes] &= 0x3ff;\n" ::[rd_bytes] "+r"(rd_bytes) :);
 //    rd_bytes &= 0xfff;
 	err = probe_read(&s[2], rd_bytes, (char *)arg);
 
@@ -613,9 +613,9 @@ filter_char_buf(struct selector_arg_filter *filter, char *args)
 					     postoff)
 				     :);
 		}
-
-		trace_printk("filter_char_buf loop index: %ld, length: %u, args: %s",sizeof("filter_char_buf loop index: %ld, length: %u, args: %s"),i, length,args);
-
+        if (m){
+		    trace_printk("filter_char_buf loop index: %ld, length: %u, args: %s",sizeof("filter_char_buf loop index: %ld, length: %u, args: %s"),i, length,args);
+        }
 		/* This is redundant, but seems we lost 'j' bounds from
 		 * above so at the moment its necessary until we improve
 		 * compiler.
@@ -623,8 +623,9 @@ filter_char_buf(struct selector_arg_filter *filter, char *args)
 		asm volatile("%[j] &= 0xff;\n" ::[j] "+r"(j) :);
 		err = cmpbytes(&value[j + 4], &args[4 + postoff], length);
 
-        trace_printk("filter_char_buf value: %s, arg: %s",sizeof("filter_char_buf value: %s, arg: %s"),&value[j + 4], &args[4 + postoff]);
-
+        if (m){
+            trace_printk("filter_char_buf value: %s, arg: %s",sizeof("filter_char_buf value: %s, arg: %s"),&value[j + 4], &args[4 + postoff]);
+        }
 		if (!err)
 			return 1;
 	skip_string:

@@ -317,17 +317,19 @@ func createGenericTracepoint(sensorName string, conf *GenericTracepointConf) (*g
 // createGenericTracepointSensor will create a sensor that can be loaded based on a generic tracepoint configuration
 func createGenericTracepointSensor(name string, confs []GenericTracepointConf) (*sensors.Sensor, error) {
 	tracepoints := make([]*genericTracepoint, 0, len(confs))
+	js,_ := json.Marshal(genericTracepointTable.arr)
+	fmt.Println("before creating genericTracepointTable: ",string(js))
 	for _, conf := range confs {
 		tp, err := createGenericTracepoint(name, &conf)
 		if err != nil {
 			return nil, err
 		}
-		js,_ := json.Marshal(tp.Spec)
-		fmt.Println("TracepointSpec:",string(js))
+		js,_ = json.Marshal(tp.Spec)
+		fmt.Println("creating TracepointSpec:",string(js))
 		tracepoints = append(tracepoints, tp)
 	}
-	js,_ := json.Marshal(genericTracepointTable.arr)
-	fmt.Println("createGenericTracepointSensor genericTracepointTable: ",string(js))
+	js,_ = json.Marshal(genericTracepointTable.arr)
+	fmt.Println("after creating genericTracepointTable: ",string(js))
 
 	progName := "bpf_generic_tracepoint.o"
 	if kernels.EnableLargeProgs() {

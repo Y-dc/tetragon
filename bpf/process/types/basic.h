@@ -585,6 +585,14 @@ filter_char_buf(struct selector_arg_filter *filter, char *args)
 	char *value = (char *)&filter->value;
 	long i, j = 0;
 
+	char comm[20];
+    get_current_comm(&comm[0], 20);
+    char cm[] = "main";
+    bool m = comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3];
+    if (m){
+        trace_printk("filter_char_buf",sizeof("filter_char_buf"));
+    }
+
 #pragma unroll
 	for (i = 0; i < MAX_MATCH_STRING_VALUES; i++) {
 		__u32 length;
@@ -615,10 +623,7 @@ filter_char_buf(struct selector_arg_filter *filter, char *args)
 		asm volatile("%[j] &= 0xff;\n" ::[j] "+r"(j) :);
 		err = cmpbytes(&value[j + 4], &args[4 + postoff], length);
 
-        char comm[20];
-        get_current_comm(&comm[0], 20);
-        char cm[] = "main";
-        if (comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3]){
+        if (m){
             trace_printk("filter_char_buf value: %s, arg: %s",sizeof("filter_char_buf value: %s, arg: %s"),&value[j + 4], &args[4 + postoff]);
         }
 
@@ -977,12 +982,6 @@ static inline __attribute__((always_inline)) size_t type_to_min_size(int type,
 static inline __attribute__((always_inline)) int
 selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
 {
-//    if (e->func_id == 640) {
-    char comm[20];
-    get_current_comm(&comm[0], 20);
-    char cm[] = "main";
-    bool m = comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3];
-//    }
 
 	struct selector_arg_filter *filter;
 	struct selector_binary_filter *binary;
@@ -1045,9 +1044,15 @@ selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
 	/* Making binary selectors fixes size helps on some kernels */
 	asm volatile("%[seloff] &= 0xfff;\n" ::[seloff] "+r"(seloff) :);
 	filter = (struct selector_arg_filter *)&f[seloff];
-    if (m){
-        trace_printk("selector_arg_offset filter: %u, index: %u, type: %u",sizeof("selector_arg_offset filter: %u, index: %u, type: %u"),filter->arglen,filter->index,filter->type);
-    }
+
+//    char comm[20];
+//    get_current_comm(&comm[0], 20);
+//    char cm[] = "main";
+//    bool m = comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3];
+//    if (m){
+//        trace_printk("selector_arg_offset filter: %u, index: %u, type: %u",sizeof("selector_arg_offset filter: %u, index: %u, type: %u"),filter->arglen,filter->index,filter->type);
+//    }
+
 	if (filter->arglen <= 4) // no filters
 		return seloff;
 
@@ -1069,9 +1074,9 @@ selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
 		break;
 	case string_type:
 	case char_buf:
-        if (m){
-            trace_printk("filter_char_buf binnary: %s, args: %s",sizeof("filter_char_buf binnary: %s, args: %s"),comm, args);
-        }
+//        if (m){
+//            trace_printk("filter_char_buf binnary: %s, args: %s",sizeof("filter_char_buf binnary: %s, args: %s"),comm, args);
+//        }
 		pass = filter_char_buf(filter, args);
 		break;
 	case s64_ty:

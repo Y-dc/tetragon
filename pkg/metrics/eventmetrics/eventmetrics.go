@@ -6,7 +6,6 @@ package eventmetrics
 import (
 	"bufio"
 	"bytes"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -146,9 +145,9 @@ func handleTracePointToHTTP(ev *tetragon.GetEventsResponse, eventType, namespace
 	for _, arg := range args {
 		data := arg.GetBytesArg()
 		if len(data) > 0 {
-			if binary == "/data/code/main" {
-				fmt.Printf("event: %s\n, args: %s\n", event, data)
-			}
+			//if binary == "/data/code/main" {
+			//	fmt.Printf("event: %s\n, args: %s\n", event, data)
+			//}
 			parseResponseMessage(data, namespace, pod, binary)
 			parseRequestMessage(data, namespace, pod, binary)
 		}

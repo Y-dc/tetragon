@@ -614,7 +614,7 @@ filter_char_buf(struct selector_arg_filter *filter, char *args)
 				     :);
 		}
 
-		trace_printk("filter_char_buf loop index: %ld, length: %u, args: %s",sizeof("filter_char_buf loop index: %ld, length: %u, args: %s",i, length,&a));
+		trace_printk("filter_char_buf loop index: %ld, length: %u, args: %s",sizeof("filter_char_buf loop index: %ld, length: %u, args: %s"),i, length,&a);
 
 		/* This is redundant, but seems we lost 'j' bounds from
 		 * above so at the moment its necessary until we improve

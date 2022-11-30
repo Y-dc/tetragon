@@ -311,6 +311,7 @@ func createGenericTracepoint(sensorName string, conf *GenericTracepointConf) (*g
 	}
 
 	genericTracepointTable.addTracepoint(ret)
+	fmt.Printf("addTracepoint event: %s, idx: %d\n", ret.Info.Event,ret.tableIdx)
 	ret.pinPathPrefix = sensors.PathJoin(sensorName, fmt.Sprintf("gtp-%d", ret.tableIdx))
 	return ret, nil
 }
@@ -373,6 +374,8 @@ func (tp *genericTracepoint) KernelSelectors() (*selectors.KernelSelectorState, 
 	// rewrite arg index
 	selArgs := make([]v1alpha1.KProbeArg, 0, len(tp.args))
 	selSelectors := make([]v1alpha1.KProbeSelector, 0, len(tp.Spec.Selectors))
+	js,_ := json.Marshal(tp.Spec.Selectors)
+	fmt.Println("selSelectors before:",string(js))
 	for i := range tp.Spec.Selectors {
 		origSel := &tp.Spec.Selectors[i]
 		selSelectors = append(selSelectors, *origSel.DeepCopy())
@@ -405,8 +408,8 @@ func (tp *genericTracepoint) KernelSelectors() (*selectors.KernelSelectorState, 
 		}
 	}
 
-	js,_ := json.Marshal(selSelectors)
-	fmt.Println("selSelectors:",string(js))
+	js,_ = json.Marshal(selSelectors)
+	fmt.Println("selSelectors after:",string(js))
 	return selectors.InitKernelSelectorState(selSelectors, selArgs)
 }
 
@@ -509,6 +512,7 @@ func LoadGenericTracepointSensor(bpfDir, mapDir string, load *program.Program, v
 	if err != nil {
 		return fmt.Errorf("Could not find generic tracepoint information for %s: %w", load.Attach, err)
 	}
+	fmt.Printf("getTracepoint event: %s, idx: %d\n", tp.Info.Event,tp.tableIdx)
 
 	kernelSelectors, err := tp.KernelSelectors()
 	if err != nil {

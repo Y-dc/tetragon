@@ -309,24 +309,21 @@ func createGenericTracepoint(sensorName string, conf *GenericTracepointConf) (*g
 		Spec: conf,
 		args: tpArgs,
 	}
-	js,_ := json.Marshal(conf)
-	fmt.Println("TracepointSpec:",string(js))
 	genericTracepointTable.addTracepoint(ret)
-	fmt.Printf("addTracepoint event: %s, idx: %d\n", ret.Info.Event,ret.tableIdx)
 	ret.pinPathPrefix = sensors.PathJoin(sensorName, fmt.Sprintf("gtp-%d", ret.tableIdx))
 	return ret, nil
 }
 
 // createGenericTracepointSensor will create a sensor that can be loaded based on a generic tracepoint configuration
 func createGenericTracepointSensor(name string, confs []GenericTracepointConf) (*sensors.Sensor, error) {
-	js,_ := json.Marshal(confs)
-	fmt.Println("All TracepointSpec:",string(js))
 	tracepoints := make([]*genericTracepoint, 0, len(confs))
 	for _, conf := range confs {
 		tp, err := createGenericTracepoint(name, &conf)
 		if err != nil {
 			return nil, err
 		}
+		js,_ := json.Marshal(tp.Spec)
+		fmt.Println("TracepointSpec:",string(js))
 		tracepoints = append(tracepoints, tp)
 	}
 
@@ -514,7 +511,8 @@ func LoadGenericTracepointSensor(bpfDir, mapDir string, load *program.Program, v
 	if err != nil {
 		return fmt.Errorf("Could not find generic tracepoint information for %s: %w", load.Attach, err)
 	}
-	fmt.Printf("getTracepoint event: %s, idx: %d\n", tp.Info.Event,tp.tableIdx)
+	js,_ := json.Marshal(tp.Spec)
+	fmt.Printf("getTracepoint event: %s, idx: %d, spec:%s\n", tp.Info.Event,tp.tableIdx,js)
 
 	kernelSelectors, err := tp.KernelSelectors()
 	if err != nil {
@@ -651,9 +649,12 @@ func (t *observerTracepointSensor) SpecHandler(raw interface{}) (*sensors.Sensor
 	if len(spec.Tracepoints) > 0 {
 		return createGenericTracepointSensor(name, spec.Tracepoints)
 	}
+
 	return nil, nil
 }
 
 func (t *observerTracepointSensor) LoadProbe(args sensors.LoadProbeArgs) error {
+	js,_ := json.Marshal(genericTracepointTable.arr)
+	fmt.Println("LoadProbe genericTracepointTable: ",string(js))
 	return LoadGenericTracepointSensor(args.BPFDir, args.MapDir, args.Load, args.Version, args.Verbose)
 }

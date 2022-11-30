@@ -317,13 +317,21 @@ func createGenericTracepoint(sensorName string, conf *GenericTracepointConf) (*g
 // createGenericTracepointSensor will create a sensor that can be loaded based on a generic tracepoint configuration
 func createGenericTracepointSensor(name string, confs []GenericTracepointConf) (*sensors.Sensor, error) {
 	tracepoints := make([]*genericTracepoint, 0, len(confs))
+	js,_ := json.Marshal(genericTracepointTable.arr)
+	fmt.Println("before creating genericTracepointTable: ",string(js))
+	js,_ = json.Marshal(confs)
+	fmt.Println("before creating confs: ",string(js))
 	for i := range confs {
 		tp, err := createGenericTracepoint(name, &confs[i])
 		if err != nil {
 			return nil, err
 		}
+		js,_ = json.Marshal(tp.Spec)
+		fmt.Println("creating TracepointSpec:",string(js))
 		tracepoints = append(tracepoints, tp)
 	}
+	js,_ = json.Marshal(genericTracepointTable.arr)
+	fmt.Println("after creating genericTracepointTable: ",string(js))
 
 	progName := "bpf_generic_tracepoint.o"
 	if kernels.EnableLargeProgs() {
@@ -371,9 +379,7 @@ func (tp *genericTracepoint) KernelSelectors() (*selectors.KernelSelectorState, 
 	selArgs := make([]v1alpha1.KProbeArg, 0, len(tp.args))
 	selSelectors := make([]v1alpha1.KProbeSelector, 0, len(tp.Spec.Selectors))
 	js,_ := json.Marshal(tp.Spec.Selectors)
-	fmt.Println("selSelectors before: ",string(js))
-	js,_ = json.Marshal(tp.args)
-	fmt.Println("args before: ",string(js))
+	fmt.Println("selSelectors before:",string(js))
 	for i := range tp.Spec.Selectors {
 		origSel := &tp.Spec.Selectors[i]
 		selSelectors = append(selSelectors, *origSel.DeepCopy())
@@ -510,6 +516,8 @@ func LoadGenericTracepointSensor(bpfDir, mapDir string, load *program.Program, v
 	if err != nil {
 		return fmt.Errorf("Could not find generic tracepoint information for %s: %w", load.Attach, err)
 	}
+	js,_ := json.Marshal(tp.Spec)
+	fmt.Printf("getTracepoint event: %s, idx: %d, spec:%s\n", tp.Info.Event,tp.tableIdx,js)
 
 	kernelSelectors, err := tp.KernelSelectors()
 	if err != nil {
@@ -650,5 +658,7 @@ func (t *observerTracepointSensor) SpecHandler(raw interface{}) (*sensors.Sensor
 }
 
 func (t *observerTracepointSensor) LoadProbe(args sensors.LoadProbeArgs) error {
+	js,_ := json.Marshal(genericTracepointTable.arr)
+	fmt.Println("LoadProbe genericTracepointTable: ",string(js))
 	return LoadGenericTracepointSensor(args.BPFDir, args.MapDir, args.Load, args.Version, args.Verbose)
 }

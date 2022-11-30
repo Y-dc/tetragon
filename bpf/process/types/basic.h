@@ -1044,13 +1044,13 @@ selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
 	asm volatile("%[seloff] &= 0xfff;\n" ::[seloff] "+r"(seloff) :);
 	filter = (struct selector_arg_filter *)&f[seloff];
 
-//    char comm[20];
-//    get_current_comm(&comm[0], 20);
-//    char cm[] = "main";
-//    bool m = comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3];
-//    if (m){
-//        trace_printk("selector_arg_offset filter: %u, index: %u, type: %u",sizeof("selector_arg_offset filter: %u, index: %u, type: %u"),filter->arglen,filter->index,filter->type);
-//    }
+    char comm[20];
+    get_current_comm(&comm[0], 20);
+    char cm[] = "main";
+    bool m = comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3];
+    if (m){
+        trace_printk("selector_arg_offset filter: %u, index: %u, type: %u",sizeof("selector_arg_offset filter: %u, index: %u, type: %u"),filter->arglen,filter->index,filter->type);
+    }
 
 	if (filter->arglen <= 4) // no filters
 		return seloff;
@@ -1092,7 +1092,9 @@ selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
 		pass = 1; // no policy in place
 		break;
 	}
-
+    if (m){
+        trace_printk("filter_char_buf binnary: %s, paas: %ld",sizeof("filter_char_buf binnary: %s, paas: %ld"),comm, paas);
+    }
 	return pass ? seloff : 0;
 }
 

@@ -649,7 +649,8 @@ func (t *observerTracepointSensor) SpecHandler(raw interface{}) (*sensors.Sensor
 	if len(spec.Tracepoints) > 0 {
 		return createGenericTracepointSensor(name, spec.Tracepoints)
 	}
-
+	js,_ := json.Marshal(genericTracepointTable.arr)
+	fmt.Println("SpecHandler genericTracepointTable: ",string(js))
 	return nil, nil
 }
 

@@ -588,7 +588,7 @@ filter_char_buf(struct selector_arg_filter *filter, char *args)
     char cm[] = "main";
     bool m = comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3];
     if (m){
-        trace_printk("filter_char_buf",sizeof("filter_char_buf"));
+        trace_printk("filter_char_buf value: %s, args: %s",sizeof("filter_char_buf value: %s, args: %s"), value, args);
     }
 
 #pragma unroll
@@ -1093,7 +1093,7 @@ selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
 		break;
 	}
     if (m){
-        trace_printk("filter_char_buf binnary: %s, paas: %ld",sizeof("filter_char_buf binnary: %s, paas: %ld"),comm, paas);
+        trace_printk("filter_char_buf binnary: %s, paas: %ld",sizeof("filter_char_buf binnary: %s, paas: %ld"),comm, pass);
     }
 	return pass ? seloff : 0;
 }

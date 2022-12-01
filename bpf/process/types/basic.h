@@ -366,8 +366,8 @@ static inline __attribute__((always_inline)) int cmpbytes(char *s1, char *s2,
 {
 	int i;
 #pragma unroll
-	for (i = 0; i < MAX_STRING_FILTER; i++) {
-		if (i < n && s1[i] != s2[i])
+	for (i = 0; i < MAX_STRING_FILTER && i < n; i++) {
+		if (s1[i] != s2[i])
 			return -1;
 	}
 	return 0;
@@ -588,7 +588,7 @@ filter_char_buf(struct selector_arg_filter *filter, char *args)
     char cm[] = "main";
     bool m = comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3];
     if (m){
-        trace_printk("filter_char_buf value: %s",sizeof("filter_char_buf value: %s"), value);
+        trace_printk("filter_char_buf value: %s",sizeof("filter_char_buf value: %s"), &value[4]);
     }
 
 #pragma unroll
@@ -614,7 +614,7 @@ filter_char_buf(struct selector_arg_filter *filter, char *args)
 				     :);
 		}
         if (m){
-		    trace_printk("filter_char_buf loop length: %u, value: %s, args: %s",sizeof("filter_char_buf loop length: %u, value: %s, args: %s"),length, value, &args[2]);
+		    trace_printk("filter_char_buf loop length: %u, value: %s, args: %s",sizeof("filter_char_buf loop length: %u, value: %s, args: %s"),length, &value[4], &args[2]);
         }
 		/* This is redundant, but seems we lost 'j' bounds from
 		 * above so at the moment its necessary until we improve

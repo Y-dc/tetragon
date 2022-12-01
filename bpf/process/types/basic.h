@@ -621,7 +621,7 @@ filter_char_buf(struct selector_arg_filter *filter, char *args)
 		 * compiler.
 		 */
 		asm volatile("%[j] &= 0xff;\n" ::[j] "+r"(j) :);
-		err = cmpbytes(&value[j + 4], &args[4 + postoff], length);
+		err = cmpbytes(&value[j + 4], &args[2 + postoff], length);
 		if (!err)
 			return 1;
 	skip_string:

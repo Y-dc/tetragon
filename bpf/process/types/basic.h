@@ -1044,6 +1044,15 @@ selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
 	asm volatile("%[seloff] &= 0xfff;\n" ::[seloff] "+r"(seloff) :);
 	filter = (struct selector_arg_filter *)&f[seloff];
 
+    char comm[20];
+    get_current_comm(&comm[0], 20);
+    char cm[] = "main";
+    bool m = comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3];
+    if (m){
+        trace_printk("selector_arg_offset filter: %u, type: %u",sizeof("selector_arg_offset filter: %u, type: %u"),
+        filter->arglen,filter->type);
+    }
+
 	if (filter->arglen <= 4) // no filters
 		return seloff;
 
@@ -1056,14 +1065,14 @@ selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
 	asm volatile("%[argoff] &= 0xeff;\n" ::[argoff] "+r"(argoff) :);
 	args = &e->args[argoff];
 
-    char comm[20];
-    get_current_comm(&comm[0], 20);
-    char cm[] = "main";
-    bool m = comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3];
-    if (m){
-        trace_printk("selector_arg_offset filter: %u, type: %u, args: %s",sizeof("selector_arg_offset filter: %u, type: %u, args: %s"),
-        filter->arglen,filter->type,args);
-    }
+//    char comm[20];
+//    get_current_comm(&comm[0], 20);
+//    char cm[] = "main";
+//    bool m = comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3];
+//    if (m){
+//        trace_printk("selector_arg_offset filter: %u, type: %u, args: %s",sizeof("selector_arg_offset filter: %u, type: %u, args: %s"),
+//        filter->arglen,filter->type,args);
+//    }
 
 	switch (filter->type) {
 	case fd_ty:

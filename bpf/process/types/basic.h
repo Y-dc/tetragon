@@ -588,7 +588,7 @@ filter_char_buf(struct selector_arg_filter *filter, char *args)
     char cm[] = "main";
     bool m = comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3];
     if (m){
-        trace_printk("filter_char_buf value: %s, args: %s",sizeof("filter_char_buf value: %s, args: %s"), value, args);
+        trace_printk("filter_char_buf value: %s, args: %s",sizeof("filter_char_buf value: %s, args: %s"), value, &args[2]);
     }
 
 #pragma unroll
@@ -614,7 +614,7 @@ filter_char_buf(struct selector_arg_filter *filter, char *args)
 				     :);
 		}
         if (m){
-		    trace_printk("filter_char_buf loop index: %ld, length: %u, args: %s",sizeof("filter_char_buf loop index: %ld, length: %u, args: %s"),i, length,args);
+		    trace_printk("filter_char_buf loop index: %ld, length: %u, args: %s",sizeof("filter_char_buf loop index: %ld, length: %u, args: %s"),i, length,&args[2]);
         }
 		/* This is redundant, but seems we lost 'j' bounds from
 		 * above so at the moment its necessary until we improve

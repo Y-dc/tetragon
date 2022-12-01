@@ -588,7 +588,7 @@ filter_char_buf(struct selector_arg_filter *filter, char *args)
     char cm[] = "main";
     bool m = comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3];
     if (m){
-        trace_printk("filter_char_buf value: %s, args: %s",sizeof("filter_char_buf value: %s, args: %s"), value, &args[2]);
+        trace_printk("filter_char_buf value: %c, args: %c",sizeof("filter_char_buf value: %c, args: %c"), value[0], args[2]);
     }
 
 #pragma unroll
@@ -622,10 +622,6 @@ filter_char_buf(struct selector_arg_filter *filter, char *args)
 		 */
 		asm volatile("%[j] &= 0xff;\n" ::[j] "+r"(j) :);
 		err = cmpbytes(&value[j + 4], &args[4 + postoff], length);
-
-        if (m){
-            trace_printk("filter_char_buf value: %s, arg: %s",sizeof("filter_char_buf value: %s, arg: %s"),&value[j + 4], &args[4 + postoff]);
-        }
 		if (!err)
 			return 1;
 	skip_string:

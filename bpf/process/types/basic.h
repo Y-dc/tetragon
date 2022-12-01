@@ -366,8 +366,8 @@ static inline __attribute__((always_inline)) int cmpbytes(char *s1, char *s2,
 {
 	int i;
 #pragma unroll
-	for (i = 0; i < MAX_STRING_FILTER && i < n; i++) {
-		if (s1[i] != s2[i])
+	for (i = 0; i < MAX_STRING_FILTER; i++) {
+		if (i < n && s1[i] != s2[i])
 			return -1;
 	}
 	return 0;

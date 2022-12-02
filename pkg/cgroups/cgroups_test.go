@@ -14,6 +14,7 @@ import (
 	"github.com/cilium/tetragon/pkg/defaults"
 	"github.com/cilium/tetragon/pkg/mountinfo"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"golang.org/x/sys/unix"
 )
 
@@ -97,6 +98,48 @@ func TestCgroupNameFromCStr(t *testing.T) {
 		out := CgroupNameFromCStr(test.in)
 		if out != test.want {
 			t.Errorf("CgroupNameFromCStr() mismatch - want:'%s'  -  got:'%s'\n", test.want, out)
+		}
+	}
+}
+
+func TestParseCgroupSubSysIds(t *testing.T) {
+
+	testDir := t.TempDir()
+
+	d := struct {
+		used string
+		data string
+	}{"memory,cpuset",
+		`
+#subsys_name	hierarchy	num_cgroups	enabled
+cpuset	7	2	1
+cpu	6	78	1
+cpuacct	6	78	1
+blkio	4	78	1
+memory	13	106	1
+devices	11	81	1
+freezer	5	5	1
+net_cls	2	2	1
+perf_event	8	2	1
+net_prio	2	2	1
+hugetlb	12	2	1
+rdma	9	2	1
+misc	10	1	1
+`}
+
+	file := filepath.Join(testDir, "testfile")
+	err := os.WriteFile(file, []byte(d.data), 0644)
+	require.NoError(t, err)
+
+	err = parseCgroupSubSysIds(file)
+	require.NoError(t, err)
+	for _, c := range CgroupControllers {
+		if strings.Contains(d.used, c.Name) {
+			require.Equal(t, true, c.Active)
+			require.NotZero(t, c.Id)
+		} else {
+			require.Equal(t, false, c.Active)
+			require.Zero(t, c.Id)
 		}
 	}
 }
@@ -197,6 +240,7 @@ func TestDetectCgroupFSMagic(t *testing.T) {
 	assert.NotEqual(t, uint64(CGROUP_UNDEF), GetCgroupFSMagic())
 	assert.NotEmpty(t, CgroupFsMagicStr(fs))
 	assert.NotEmpty(t, GetCgroupFSPath())
+	assert.Equal(t, true, filepath.IsAbs(GetCgroupFSPath()))
 }
 
 // Test discovery of compiled-in Cgroups controllers
@@ -219,21 +263,21 @@ func TestDiscoverSubSysIdsDefault(t *testing.T) {
 	if err == nil {
 		accessFs = true
 	}
-	for _, controller := range cgroupControllers {
+	for _, controller := range CgroupControllers {
 		if accessFs {
 			if cgroupMode == CGROUP_UNIFIED {
-				assert.EqualValues(t, 0, controller.id, "Cgroupv2 Controller '%s' hierarchy ID should be O as it is Unified Cgroup", controller.name)
+				assert.EqualValues(t, 0, controller.Id, "Cgroupv2 Controller '%s' hierarchy ID should be O as it is Unified Cgroup", controller.Name)
 			} else {
-				assert.NotEqualValues(t, 0, controller.id, "Cgroupv1 Controller '%s' hierarchy ID should not be zero", controller.name)
+				assert.NotEqualValues(t, 0, controller.Id, "Cgroupv1 Controller '%s' hierarchy ID should not be zero", controller.Name)
 			}
 		}
 
-		if controller.active {
+		if controller.Active {
 			fixed = true
 
 			// If those controllers are active let's check their css index
-			if controller.name == "memory" || controller.name == "pids" {
-				assert.NotEqualValues(t, 0, controller.idx, "Cgroup Controller '%s' css index should not be zero", controller.name)
+			if controller.Name == "memory" || controller.Name == "pids" {
+				assert.NotEqualValues(t, 0, controller.Idx, "Cgroup Controller '%s' css index should not be zero", controller.Name)
 			}
 		}
 	}

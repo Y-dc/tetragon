@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"net/http"
+	pprofhttp "net/http/pprof"
 	"os"
 	"os/signal"
 	"runtime"
@@ -36,6 +38,7 @@ import (
 	"github.com/cilium/tetragon/pkg/sensors/base"
 	"github.com/cilium/tetragon/pkg/sensors/program"
 	"github.com/cilium/tetragon/pkg/server"
+	"github.com/cilium/tetragon/pkg/unixlisten"
 	"github.com/cilium/tetragon/pkg/version"
 	"github.com/cilium/tetragon/pkg/watcher"
 	"github.com/cilium/tetragon/pkg/watcher/crd"
@@ -161,6 +164,14 @@ func tetragonExecute() error {
 	bpf.CheckOrMountFS("")
 	bpf.CheckOrMountDebugFS()
 	bpf.CheckOrMountCgroup2()
+
+	if pprofAddr != "" {
+		go func() {
+			if err := servePprof(pprofAddr); err != nil {
+				log.Warnf("serving pprof via http: %v", err)
+			}
+		}()
+	}
 
 	// Start profilers first as we have to capture them in signal handling
 	if memProfile != "" {
@@ -359,19 +370,29 @@ func startExporter(ctx context.Context, server *server.Server) error {
 	return nil
 }
 
-func Serve(ctx context.Context, address string, server *server.Server) error {
+func Serve(ctx context.Context, listenAddr string, server *server.Server) error {
 	grpcServer := grpc.NewServer()
 	tetragon.RegisterFineGuidanceSensorsServer(grpcServer, server)
-	go func(address string) {
-		listener, err := net.Listen("tcp", address)
-		if err != nil {
-			log.WithError(err).WithField("address", address).Fatal("Failed to start gRPC server")
+	proto, addr, err := splitListenAddr(listenAddr)
+	if err != nil {
+		return fmt.Errorf("failed to parse listen address: %w", err)
+	}
+	go func(proto, addr string) {
+		var listener net.Listener
+		var err error
+		if proto == "unix" {
+			listener, err = unixlisten.ListenWithRename(addr, 0660)
+		} else {
+			listener, err = net.Listen(proto, addr)
 		}
-		log.WithField("address", address).Info("Starting gRPC server")
+		if err != nil {
+			log.WithError(err).WithField("protocol", proto).WithField("address", addr).Fatal("Failed to start gRPC server")
+		}
+		log.WithField("address", addr).WithField("protocol", proto).Info("Starting gRPC server")
 		if err = grpcServer.Serve(listener); err != nil {
 			log.WithError(err).Error("Failed to close gRPC server")
 		}
-	}(address)
+	}(proto, addr)
 	go func() {
 		<-ctx.Done()
 		grpcServer.Stop()
@@ -396,8 +417,8 @@ func getWatcher() (watcher.K8sResourceWatcher, error) {
 
 func execute() error {
 	rootCmd := &cobra.Command{
-		Use:   "tetragon SOURCE_DIR BUCKET",
-		Short: "Tetragon",
+		Use:   "tetragon",
+		Short: "Run the tetragon agent",
 		Run: func(cmd *cobra.Command, args []string) {
 			readAndSetFlags()
 
@@ -480,6 +501,9 @@ func execute() error {
 	flags.String(keyMemProfile, "", "Store MEM profile into provided file")
 	flags.MarkHidden(keyMemProfile)
 
+	flags.String(keyPprofAddr, "", "Profile via pprof http")
+	flags.MarkHidden(keyPprofAddr)
+
 	// JSON export aggregation options.
 	flags.Bool(keyEnableExportAggregation, false, "Enable JSON export aggregation")
 	flags.Duration(keyExportAggregationWindowSize, 15*time.Second, "JSON export aggregation time window")
@@ -508,4 +532,14 @@ func execute() error {
 
 	viper.BindPFlags(flags)
 	return rootCmd.Execute()
+}
+
+func servePprof(addr string) error {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/debug/pprof/", pprofhttp.Index)
+	mux.HandleFunc("/debug/pprof/cmdline", pprofhttp.Cmdline)
+	mux.HandleFunc("/debug/pprof/profile", pprofhttp.Profile)
+	mux.HandleFunc("/debug/pprof/symbol", pprofhttp.Symbol)
+	mux.HandleFunc("/debug/pprof/trace", pprofhttp.Trace)
+	return http.ListenAndServe(addr, mux)
 }

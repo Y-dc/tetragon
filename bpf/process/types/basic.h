@@ -567,8 +567,9 @@ filter_char_buf(struct selector_arg_filter *filter, char *args)
 		asm volatile("%[j] &= 0xff;\n" ::[j] "+r"(j) :);
 		length = *(__u32 *)&value[j];
 		asm volatile("%[length] &= 0x3f;\n" ::[length] "+r"(length) :);
-		v = (int)value[j];
-		a = (int)args[0];
+		// get the meta length of value and args.
+		v = ((int *)value)[j];
+		a = ((int *)args)[0];
 		if (filter->op == op_filter_eq) {
 			if (v != a)
 				goto skip_string;
@@ -584,7 +585,7 @@ filter_char_buf(struct selector_arg_filter *filter, char *args)
 		 * compiler.
 		 */
 		asm volatile("%[j] &= 0xff;\n" ::[j] "+r"(j) :);
-		err = cmpbytes(&value[j + 4], &args[4 + postoff], length);
+		err = cmpbytes(&value[j + 4], &args[8 + postoff], length);
 		if (!err)
 			return 1;
 	skip_string:

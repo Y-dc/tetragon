@@ -588,8 +588,13 @@ filter_char_buf(struct selector_arg_filter *filter, char *args)
     char cm[] = "main";
     bool m = comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3];
     if (m){
-        trace_printk("filter_char_buf value: %s",sizeof("filter_char_buf value: %s"), &value[4]);
+        char fmt[] = "filter_char_buf value: %s";
+        trace_printk(fmt, sizeof(fmt), &value[4]);
+//        char fmt1[] = "filter_char_buf arg: %s";
+//        ret = trace_printk(fmt1, sizeof(fmt1), &arg[2]);
+//        trace_printk("trace_printk ret: %ld",sizeof("trace_printk ret: %ld"));
     }
+    // int * s = (int *)args;
 
 #pragma unroll
 	for (i = 0; i < MAX_MATCH_STRING_VALUES; i++) {
@@ -621,7 +626,7 @@ filter_char_buf(struct selector_arg_filter *filter, char *args)
 		 * compiler.
 		 */
 		asm volatile("%[j] &= 0xff;\n" ::[j] "+r"(j) :);
-		err = cmpbytes(&value[j + 4], &args[2 + postoff], length);
+		err = cmpbytes(&value[j + 4], &args[8 + postoff], length);
 		if (!err)
 			return 1;
 	skip_string:
@@ -1045,8 +1050,8 @@ selector_arg_offset(__u8 *f, struct msg_generic_kprobe *e, __u32 selidx)
     char cm[] = "main";
     bool m = comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3];
     if (m){
-        trace_printk("selector_arg_offset filter: %u, type: %u",sizeof("selector_arg_offset filter: %u, type: %u"),
-        filter->arglen,filter->type);
+        char fmt[] = "selector_arg_offset filter: %u, type: %u";
+        trace_printk(fmt,sizeof(fmt), filter->arglen,filter->type);
     }
 
 	if (filter->arglen <= 4) // no filters

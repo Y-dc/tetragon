@@ -604,8 +604,8 @@ filter_char_buf(struct selector_arg_filter *filter, char *args)
 		asm volatile("%[j] &= 0xff;\n" ::[j] "+r"(j) :);
 		length = *(__u32 *)&value[j];
 		asm volatile("%[length] &= 0x3f;\n" ::[length] "+r"(length) :);
-		v = (int)value[j];
-		a = (int)args[0];
+		v = ((int *)value)[j];
+		a = ((int *)args)[0];
 		if (filter->op == op_filter_eq) {
 			if (v != a)
 				goto skip_string;
@@ -618,7 +618,7 @@ filter_char_buf(struct selector_arg_filter *filter, char *args)
         if (m){
 			int *vs = (int *)value;
 			int *as = (int *)args;
-		    trace_printk("filter_char_buf loop value: %d, args: %d",sizeof("filter_char_buf loop value: %d, args: %d"),vs[0], as[0]);
+		    trace_printk("filter_char_buf loop value(s): %d, args(s): %d",sizeof("filter_char_buf loop value(s): %d, args(s): %d"),vs[0], as[0]);
         }
 		/* This is redundant, but seems we lost 'j' bounds from
 		 * above so at the moment its necessary until we improve

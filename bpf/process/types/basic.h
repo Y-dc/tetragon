@@ -588,11 +588,8 @@ filter_char_buf(struct selector_arg_filter *filter, char *args)
     char cm[] = "main";
     bool m = comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3];
     if (m){
-        char fmt[] = "filter_char_buf value: %s";
-        trace_printk(fmt, sizeof(fmt), &value[4]);
-//        char fmt1[] = "filter_char_buf arg: %s";
-//        ret = trace_printk(fmt1, sizeof(fmt1), &arg[2]);
-//        trace_printk("trace_printk ret: %ld",sizeof("trace_printk ret: %ld"));
+		char fmt[] = "filter_char_buf value: %s, args: %s";
+        trace_printk(fmt,fmt, &value[4], &args[8]);
     }
     // int * s = (int *)args;
 
@@ -619,7 +616,9 @@ filter_char_buf(struct selector_arg_filter *filter, char *args)
 				     :);
 		}
         if (m){
-		    trace_printk("filter_char_buf loop length: %u, value: %s, args: %s",sizeof("filter_char_buf loop length: %u, value: %s, args: %s"),length, &value[4], &args[2]);
+			int *vs = (int *)value;
+			int *as = (int *)args;
+		    trace_printk("filter_char_buf loop value: %d, args: %d",sizeof("filter_char_buf loop value: %d, args: %d"),vs[0], as[0]);
         }
 		/* This is redundant, but seems we lost 'j' bounds from
 		 * above so at the moment its necessary until we improve

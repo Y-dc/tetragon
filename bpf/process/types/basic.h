@@ -589,7 +589,7 @@ filter_char_buf(struct selector_arg_filter *filter, char *args)
     bool m = comm[0]==cm[0] && comm[1]==cm[1] && comm[2]==cm[2] && comm[3]==cm[3];
     if (m){
 		char fmt[] = "filter_char_buf value: %s, args: %s";
-        trace_printk(fmt,fmt, &value[4], &args[8]);
+        trace_printk(fmt,sizeof(fmt), &value[4], &args[8]);
     }
     // int * s = (int *)args;
 

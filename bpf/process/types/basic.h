@@ -125,7 +125,7 @@ struct event_config {
  * knob to tune how many instructions we should spend parsing
  * strings.
  */
-#define MAX_MATCH_STRING_VALUES 2
+#define MAX_MATCH_STRING_VALUES 10
 
 /* Number of values allowed in matchArgs while using an "fd" or "file" arg.
  */
@@ -520,10 +520,8 @@ __copy_char_buf(long off, unsigned long arg, unsigned long bytes,
 	int err;
 
 	/* Bound bytes <4095 to ensure bytes does not read past end of buffer */
-	rd_bytes = bytes;
-	while (rd_bytes > 0xfff)
-		rd_bytes >>= 1;
-	rd_bytes &= 0xfff;
+	rd_bytes = bytes < 0x400 ? bytes : 0x3ff;
+	asm volatile("%[rd_bytes] &= 0xfff;\n" ::[rd_bytes] "+r"(rd_bytes) :);
 	err = probe_read(&s[2], rd_bytes, (char *)arg);
 	if (err < 0)
 		return return_error(s, char_buf_pagefault);

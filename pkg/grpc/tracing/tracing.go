@@ -207,7 +207,7 @@ func GetProcessKprobe(event *MsgGenericKprobeUnix) *tetragon.ProcessKprobe {
 		tetragonEvent.Process = process.GetProcessCopy()
 	}
 	if parent != nil {
-		tetragonEvent.Parent = parent.GetProcessCopy()
+		//tetragonEvent.Parent = parent.GetProcessCopy()
 	}
 
 	return tetragonEvent
@@ -295,7 +295,7 @@ func (msg *MsgGenericTracepointUnix) HandleMessage() *tetragon.GetEventsResponse
 		tetragonEvent.Process = process.GetProcessCopy()
 	}
 	if parent != nil {
-		tetragonEvent.Parent = parent.GetProcessCopy()
+		//tetragonEvent.Parent = parent.GetProcessCopy()
 	}
 
 	return &tetragon.GetEventsResponse{

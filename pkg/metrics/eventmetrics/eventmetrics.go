@@ -7,7 +7,8 @@ import (
 	"bufio"
 	"bytes"
 	"net/http"
-	"strconv"
+	"regexp"
+	"strings"
 
 	v1 "github.com/cilium/hubble/pkg/api/v1"
 	"github.com/cilium/tetragon/api/v1/tetragon"
@@ -22,7 +23,13 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
+const (
+	tracePointEnterWrite = "sys_enter_write"
+	tracePointEnterRead  = "sys_enter_read"
+)
+
 var (
+	methodReg       = regexp.MustCompile("^(GET)|(POST)|(HEAD)|(PUT)|(DELETE)|(CONNECT)|(OPTIONS)|(TRACE)|(PATCH)$")
 	EventsProcessed = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name:        consts.MetricNamePrefix + "events_total",
 		Help:        "The total number of Tetragon events",
@@ -48,6 +55,11 @@ var (
 		Help:        "The total number of HTTP response total.",
 		ConstLabels: nil,
 	}, []string{"namespace", "pod", "binary", "status"})
+	TracePointHttpResponseRequest = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name:        consts.MetricNamePrefix + "tracepoint_http_response_request_total",
+		Help:        "The total number of HTTP response request total.",
+		ConstLabels: nil,
+	}, []string{"namespace", "pod", "binary", "proto", "host", "method", "uri"})
 	TracePointHttpRequest = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name:        consts.MetricNamePrefix + "tracepoint_http_request_total",
 		Help:        "The total number of HTTP request total.",
@@ -70,38 +82,56 @@ func GetProcessInfo(process *tetragon.Process) (binary, pod, namespace string) {
 
 func parseResponseMessage(value []byte, namespace, pod, binary string) {
 	// try to parse the buf as http response
-	resp, err := http.ReadResponse(bufio.NewReader(bytes.NewReader(value)), nil)
-	if err != nil {
-		//fmt.Printf("Failed to parse Response, %s\n", err)
+	scanner := bufio.NewScanner(bytes.NewReader(value))
+	if !scanner.Scan() {
+		return
+	}
+	proto, status, ok := strings.Cut(scanner.Text(), " ")
+	if !ok {
+		return
+	}
+	if _, _, ok = http.ParseHTTPVersion(proto); !ok {
 		return
 	}
 
-	//body := resp.Body
-	//b, _ := ioutil.ReadAll(body)
-	//body.Close()
-	//fmt.Printf("\nStatusCode: %s, Len: %s, ContentType: %s, Body: %s\n",
-	//	color.GreenString("%d", resp.StatusCode),
-	//	color.GreenString("%d", resp.ContentLength),
-	//	color.GreenString("%s", resp.Header["Content-Type"]),
-	//	color.GreenString("%s", string(b)))
-	TracePointHttpResponse.WithLabelValues(namespace, pod, binary, strconv.Itoa(resp.StatusCode)).Inc()
+	statusCode, _, _ := strings.Cut(strings.TrimLeft(status, " "), " ")
+	if len(statusCode) != 3 {
+		return
+	}
+
+	TracePointHttpResponse.WithLabelValues(namespace, pod, binary, statusCode).Inc()
 }
 
-func parseRequestMessage(value []byte, namespace, pod, binary string) {
+func parseRequestMessage(value []byte, event, namespace, pod, binary string) {
 	// try to parse the buf as http request
-	req, err := http.ReadRequest(bufio.NewReader(bytes.NewReader(value)))
-	if err != nil {
-		//fmt.Printf("Failed to parse Request, %s\n", err)
+	scanner := bufio.NewScanner(bytes.NewReader(value))
+	if !scanner.Scan() {
+		return
+	}
+	method, rest, ok1 := strings.Cut(scanner.Text(), " ")
+	if !ok1 || !methodReg.MatchString(method) {
+		return
+	}
+	requestURI, proto, ok2 := strings.Cut(rest, " ")
+	if !ok2 {
+		return
+	}
+	if !scanner.Scan() {
+		return
+	}
+	_, host, ok3 := strings.Cut(scanner.Text(), ": ")
+	if !ok3 {
 		return
 	}
 
-	//fmt.Printf("\nProtocol: %s, Method: %s, URI: %s, Host: %s\n",
-	//	color.GreenString("%s", req.Proto),
-	//	color.GreenString("%s", req.Method),
-	//	color.GreenString("%s", req.RequestURI),
-	//	color.GreenString("%s", req.Host))
-	TracePointHttpRequest.WithLabelValues(
-		namespace, pod, binary, req.Proto, req.Host, req.Method, req.RequestURI).Inc()
+	switch event {
+	case tracePointEnterWrite:
+		TracePointHttpRequest.WithLabelValues(
+			namespace, pod, binary, proto, host, method, requestURI).Inc()
+	case tracePointEnterRead:
+		TracePointHttpResponseRequest.WithLabelValues(
+			namespace, pod, binary, proto, host, method, requestURI).Inc()
+	}
 }
 
 func handleOriginalEvent(originalEvent interface{}) {
@@ -139,16 +169,25 @@ func handleTracePointToHTTP(ev *tetragon.GetEventsResponse, eventType, namespace
 		return
 	}
 	_, event, args := helpers.ResponseGetTracePointInfo(ev)
-	if event != "sys_enter_write" && event != "sys_enter_read" {
-		return
-	}
-	for _, arg := range args {
-		data := arg.GetBytesArg()
-		if len(data) > 0 {
-			//fmt.Printf("DCY log:\n binary: %s \n event: %s\n, args: %s\n\n",
-			//	binary, event, data)
-			parseResponseMessage(data, namespace, pod, binary)
-			parseRequestMessage(data, namespace, pod, binary)
+	switch event {
+	case "sys_enter_write":
+		for _, arg := range args {
+			data := arg.GetBytesArg()
+			if len(data) > 0 {
+				//fmt.Printf("DCY log:\n binary: %s \n event: %s\n, args: %s\n\n",
+				//	binary, event, data)
+				parseResponseMessage(data, namespace, pod, binary)
+				parseRequestMessage(data, event, namespace, pod, binary)
+			}
+		}
+	case "sys_enter_read":
+		for _, arg := range args {
+			data := arg.GetBytesArg()
+			if len(data) > 0 {
+				//fmt.Printf("DCY log:\n binary: %s \n event: %s\n, args: %s\n\n",
+				//	binary, event, data)
+				parseRequestMessage(data, event, namespace, pod, binary)
+			}
 		}
 	}
 }

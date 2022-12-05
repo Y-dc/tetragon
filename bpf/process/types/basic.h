@@ -125,7 +125,7 @@ struct event_config {
  * knob to tune how many instructions we should spend parsing
  * strings.
  */
-#define MAX_MATCH_STRING_VALUES 2
+#define MAX_MATCH_STRING_VALUES 9
 
 /* Number of values allowed in matchArgs while using an "fd" or "file" arg.
  */
@@ -520,8 +520,8 @@ __copy_char_buf(long off, unsigned long arg, unsigned long bytes,
 	int err;
 
 	/* Bound bytes <4095 to ensure bytes does not read past end of buffer */
-	rd_bytes = bytes;
-	rd_bytes &= 0xfff;
+	rd_bytes = bytes < 0x400 ? bytes : 0x3ff;
+    asm volatile("%[rd_bytes] &= 0xfff;\n" ::[rd_bytes] "+r"(rd_bytes) :);
 	err = probe_read(&s[2], rd_bytes, (char *)arg);
 	if (err < 0)
 		return return_error(s, char_buf_pagefault);
@@ -565,8 +565,8 @@ filter_char_buf(struct selector_arg_filter *filter, char *args)
 		asm volatile("%[j] &= 0xff;\n" ::[j] "+r"(j) :);
 		length = *(__u32 *)&value[j];
 		asm volatile("%[length] &= 0x3f;\n" ::[length] "+r"(length) :);
-		v = (int)value[j];
-		a = (int)args[0];
+		v = ((int *)value)[j];
+		a = ((int *)args)[0];
 		if (filter->op == op_filter_eq) {
 			if (v != a)
 				goto skip_string;
@@ -582,7 +582,7 @@ filter_char_buf(struct selector_arg_filter *filter, char *args)
 		 * compiler.
 		 */
 		asm volatile("%[j] &= 0xff;\n" ::[j] "+r"(j) :);
-		err = cmpbytes(&value[j + 4], &args[4 + postoff], length);
+		err = cmpbytes(&value[j + 4], &args[8 + postoff], length);
 		if (!err)
 			return 1;
 	skip_string:

@@ -7,7 +7,9 @@ import (
 	"bufio"
 	"bytes"
 	"net/http"
+	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 
 	v1 "github.com/cilium/hubble/pkg/api/v1"
@@ -98,6 +100,10 @@ func parseResponseMessage(value []byte, namespace, pod, binary string) {
 	if len(statusCode) != 3 {
 		return
 	}
+	code, err := strconv.Atoi(statusCode)
+	if err != nil || code < 0 {
+		return
+	}
 
 	TracePointHttpResponse.WithLabelValues(namespace, pod, binary, statusCode).Inc()
 }
@@ -116,12 +122,26 @@ func parseRequestMessage(value []byte, event, namespace, pod, binary string) {
 	if !ok2 {
 		return
 	}
+	if _, _, ok := http.ParseHTTPVersion(proto); !ok {
+		return
+	}
+	justAuthority := method == "CONNECT" && !strings.HasPrefix(requestURI, "/")
+	if justAuthority {
+		requestURI = "http://" + requestURI
+	}
+
+	if _, err := url.ParseRequestURI(requestURI); err != nil {
+		return
+	}
 	if !scanner.Scan() {
 		return
 	}
-	_, host, ok3 := strings.Cut(scanner.Text(), ": ")
+	key, host, ok3 := strings.Cut(scanner.Text(), ": ")
 	if !ok3 {
 		return
+	}
+	if key != "Host" {
+		host = ""
 	}
 
 	switch event {

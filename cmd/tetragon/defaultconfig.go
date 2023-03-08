@@ -183,7 +183,7 @@ var defaultTracingPolicies = []string{
 	httpTracePoint,
 	dnsKprobe,
 	tcpKprobe,
-	tcpTracePoint,
+	//tcpTracePoint,
 }
 
 const (
